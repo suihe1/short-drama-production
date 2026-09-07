@@ -23,7 +23,9 @@ node scripts/production-kit.mjs job-export-compshare <production.json> \
   --id H3CS-E01-16 --out <storyboard/h3-package/jobs/E01-16.compshare.json>
 ```
 
-只允许显式指定片段；参考图缺失即失败。默认一次只建一个样片任务。分镜总时长若为小数，量化为 4–15 秒整数，并在总控与 CompShare job 中保留原时长和调整量。导出必须放在 `job-approve` 之后；客户端会检查导出文件内的 `sourceStatus=approved` 与 `costApproved=true`，旧文件需要重新导出。
+只允许显式指定片段；参考图缺失即失败。默认一次只建一个样片任务。分镜总时长若为小数，量化为 4–30 秒整数，并在总控与 CompShare job 中保留原时长和调整量。导出必须放在 `job-approve` 之后；客户端会检查导出文件内的 `sourceStatus=approved` 与 `costApproved=true`，旧文件需要重新导出。
+
+2026-09-07 核对 [CompShare H3 API 文档](https://www.compshare.cn/docs/modelverse/models/video_api/minimax-h3-video-api)：输出 `duration` 为 4–30 秒；旧工作台指南的 15 秒不是当前 API 上限。30 秒是上限，不是默认时长，不自动拼接或拉长旧镜头。大于 15 秒的 CompShare 提示词沿用官方六段式结构，但按真实总时长重新计时；本机官方提示词 skill 的旧 15 秒范围在此提供方场景下由已核实的 API 能力覆盖。外部 novel-storyboard 若仍限制 15 秒，需升级其导出器或人工提供已审查包，不假定它已同步升级。
 
 ## 无费用预检
 

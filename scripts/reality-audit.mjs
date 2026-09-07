@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 function usage() {
-  console.log('Usage: node scripts/reality-audit.mjs validate <reality-audit.json>');
+  console.log('Usage: node scripts/reality-audit.mjs validate|preflight <reality-audit.json>');
 }
 
 function fail(message) {
@@ -16,7 +16,7 @@ if (["help", "--help", "-h"].includes(command)) {
   usage();
   process.exit(0);
 }
-if (command !== 'validate' || !input) {
+if (!['validate', 'preflight'].includes(command) || !input) {
   usage();
   process.exit(2);
 }
@@ -40,6 +40,10 @@ const requiredList = (value, at, min = 1) => {
   }
 };
 
+if (!data || typeof data !== 'object' || Array.isArray(data)) {
+  fail('审计根节点必须为对象');
+  process.exit(1);
+}
 if (data.schemaVersion !== '1.0') errors.push('schemaVersion 必须为 1.0');
 if (data.projectMode !== 'reality-grounded') errors.push('projectMode 必须为 reality-grounded');
 requiredString(data.researchedAt, 'researchedAt');
@@ -87,6 +91,12 @@ for (const [index, scene] of scenes.entries()) {
   }
   if (sceneIds.has(scene?.sceneId)) errors.push(`${at}.sceneId 重复：${scene.sceneId}`);
   sceneIds.add(scene?.sceneId);
+}
+
+if (command === 'preflight') {
+  for (const scene of scenes) for (const key of ['assetPrompt', 'storyboard', 'frames']) {
+    if (scene?.audit?.[key] !== 'pass') errors.push(`${scene?.sceneId ?? '未知场景'}.${key} 尚未通过：${scene?.audit?.[key] ?? 'missing'}`);
+  }
 }
 
 if (errors.length) {

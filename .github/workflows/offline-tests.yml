@@ -1,0 +1,24 @@
+name: Offline tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: node scripts/selftest.mjs
+      - run: node scripts/reality-gate-test.mjs
+      - run: node scripts/storyboard-view-test.mjs
+      - run: python scripts/compshare-offline-test.py
+      - run: node scripts/offline-demo.mjs
+      - run: node scripts/storyboard-view.mjs examples/offline/storyboard.json --out runs/storyboard-demo.html

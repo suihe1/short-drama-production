@@ -92,6 +92,7 @@ def resolve_job(job_path: Path) -> tuple[dict[str, Any], str, Path]:
     job_path = job_path.resolve()
     job = read_json(job_path)
     base = job_path.parent
+    check_reality_snapshot(job, base)
 
     prompt_file = job.get("promptFile")
     if not isinstance(prompt_file, str) or not prompt_file.strip():
@@ -121,8 +122,8 @@ def resolve_job(job_path: Path) -> tuple[dict[str, Any], str, Path]:
     job["_promptSuffixCharacters"] = len(prompt) - job["_promptMainCharacters"]
 
     duration = job.get("duration")
-    if not isinstance(duration, int) or not 4 <= duration <= 15:
-        raise H3Error("job.duration must be an integer from 4 to 15")
+    if type(duration) is not int or not 4 <= duration <= 30:
+        raise H3Error("job.duration must be an integer from 4 to 30")
     if job.get("resolution") not in VALID_RESOLUTIONS:
         raise H3Error(f"job.resolution must be one of: {', '.join(sorted(VALID_RESOLUTIONS))}")
     ratio = job.get("ratio")
@@ -198,6 +199,17 @@ def resolve_job(job_path: Path) -> tuple[dict[str, Any], str, Path]:
         raise H3Error("job.output is required")
     output_path = (base / output).resolve()
     return job, prompt, output_path
+
+
+def check_reality_snapshot(job: dict[str, Any], base: Path) -> None:
+    audit = job.get("realityAudit")
+    if audit is None:
+        return
+    if not isinstance(audit, dict) or not isinstance(audit.get("path"), str) or not audit["path"]:
+        raise H3Error("Invalid reality audit snapshot; export the job again")
+    audit_path = (base / audit["path"]).resolve()
+    if not audit_path.is_file() or hashlib.sha256(audit_path.read_bytes()).hexdigest() != audit.get("sha256"):
+        raise H3Error("Reality audit changed or is missing; review and export the job again")
 
 
 def build_payload(job: dict[str, Any], prompt: str) -> dict[str, Any]:
@@ -317,6 +329,8 @@ def cmd_submit(args: argparse.Namespace) -> int:
         print(json.dumps(safe, ensure_ascii=False, indent=2))
         return 0
 
+    if job.get("integrityVersion") != 1 or "realityAudit" not in job:
+        raise H3Error("Legacy export: use the current production-kit to export the job again")
     if job.get("sourceStatus") != "approved" or job.get("costApproved") is not True:
         raise H3Error(
             "Paid submission requires an export created after production-kit job-approve "

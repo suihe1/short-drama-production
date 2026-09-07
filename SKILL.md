@@ -12,6 +12,8 @@ license: Apache-2.0
 
 ## 按需读取
 
+- 首次安装或环境诊断：读 `references/getting-started.md`；运行 `scripts/doctor.mjs` 和 `scripts/offline-demo.mjs` 可离线检查与演练。
+- 可视化审阅分镜、素材与视频：读 `references/storyboard-view.md`，用 `scripts/storyboard-view.mjs` 生成本地 HTML。规划图不自动进入参考包；返工笔记不自动变成审批。
 - 新建、继续或变更项目：读 `references/pipeline.md` 和 `references/schema.md`。
 - 现实主义或功能空间：美术出图前读 `references/reality-grounding.md`。
 - 进入导演/技术分镜：读 `references/director-storyboard-handoff.md`。
@@ -31,7 +33,7 @@ license: Apache-2.0
 4. 付费提交、批量任务、重试、发布和覆盖成片均需用户当次明确授权；已创建任务先查询，不盲目重提。
 5. 默认先做 1 个高暴露度样片，再扩到一场或一集；剧本、导演和分镜默认每批 1–3 集。
 6. 新项目默认 16:9、1920×1080、24 fps、`landscape-ensemble`；画幅变化使全部非源制品过期。
-7. 现实题材先核对功能、设备、拓扑、人流和运行状态；“空景”不能删除现实必需设备和生活痕迹。
+7. 现实题材设置 `policies.realityRequired: true` 并维护同目录 `reality-audit.json`；投产前运行 `reality-audit.mjs preflight`，三个验收项全部 `pass` 才可继续。先核对功能、设备、拓扑、人流和运行状态；“空景”不能删除现实必需设备和生活痕迹。
 8. 分镜图提示词先于候选素材；最终 H3 提示词后于素材验收。错误姿态、手别、支撑点或不可读信息图不得进入参考包。
 9. Ref2VA 与 I2VA/FL2VA/L2VA 分流；多张语义参考不是按切点强钉的关键帧。
 10. 分别描述画面内运动与摄影机运动；节奏提速通过重新计时，不把正式成片整体倍速。
@@ -70,6 +72,7 @@ node scripts/production-kit.mjs render <production.json> > production-report.md
 
 - MiniMax 官方 H3：`scripts/h3-official.mjs`，支持多模态参考、预检、显式确认提交、轮询和下载。
 - CompShare H3：`scripts/compshare-h3.py`；先用 `production-kit.mjs job-export-compshare` 导出，当前只支持参考图任务。
+- CompShare 输出时长支持 4–30 秒整数；按戏剧节奏选择时长，不自动延长旧段。超过 15 秒时见 `references/compshare-execution.md` 的提示词时长兼容说明。
 - Fish Audio：`scripts/fish-voice.mjs`，支持 dry-run、公共音色筛选、试听、授权克隆和声音母版登记。
 - 粗剪：`scripts/post-kit.mjs` 生成顺序剪辑计划；只有 `--execute` 才调用本机 FFmpeg 写输出。
 

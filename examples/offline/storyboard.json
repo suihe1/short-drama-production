@@ -1,0 +1,14 @@
+{
+  "source": "门口的伞｜故事板离线演示",
+  "aspectRatio": "16:9",
+  "episodes": [{"ep": 1, "segments": [
+    {"id": "E01-01", "sceneId": "门口", "references": [], "cuts": [
+      {"seconds": 2, "size": "WS", "angle": "平视", "blocking": "小林站在门口，放下肩上的包。", "camera": "固定镜头；人物由右向左入画", "dramaticPurpose": "建立人物回家的空间关系", "screenDirection": "右 → 左"},
+      {"seconds": 1.5, "size": "CU", "angle": "俯拍", "blocking": "门边雨伞的伞尖落下一滴水。", "camera": "固定特写", "dramaticPurpose": "让观众发现父亲刚刚到来"},
+      {"seconds": 3, "size": "MS", "angle": "平视", "blocking": "小林抬头朝厨房望去，肩膀慢慢放松。", "camera": "轻微向前推进", "dramaticPurpose": "通过反应镜头表达理解", "screenDirection": "视线朝画面左侧"}
+    ]},
+    {"id": "E01-02", "sceneId": "厨房", "references": [], "cuts": [
+      {"seconds": 3, "size": "MS", "angle": "侧面", "blocking": "父亲关掉灶火，小林接过他手里的碗。", "camera": "固定双人中景", "dramaticPurpose": "用端碗动作完成情绪交流"}
+    ]}
+  ]}]
+}

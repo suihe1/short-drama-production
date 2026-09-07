@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { realityGate } from "./reality-gate.mjs";
 
 const ARTIFACT_KINDS = new Set(["source", "outline", "cast", "art", "script", "director", "storyboard", "frames", "video", "audio", "edit", "qc", "delivery"]);
 const ARTIFACT_STATUSES = new Set(["planned", "working", "review", "approved", "stale", "missing", "blocked", "failed", "skipped"]);
@@ -444,13 +445,15 @@ export function syncJobsFromStoryboard(manifest, manifestPath, board, boardPath,
   return synced;
 }
 
-export function quantizeH3Duration(seconds, policy = "nearest") {
+export function quantizeH3Duration(seconds, policy = "nearest", provider = "minimax-official") {
+  if (!VIDEO_PROVIDERS.has(provider)) throw new Error(`未知视频提供方：${provider}`);
+  const maximum = provider === "compshare" ? 30 : 15;
   const source = Number(seconds);
-  if (!Number.isFinite(source) || source <= 0 || source > 15) throw new Error(`H3 源时长必须在 0–15 秒，收到 ${seconds}`);
+  if (!Number.isFinite(source) || source <= 0 || source > maximum) throw new Error(`H3 源时长必须在 0–${maximum} 秒，收到 ${seconds}`);
   const quantizers = { nearest: Math.round, floor: Math.floor, ceil: Math.ceil };
   const quantize = quantizers[policy];
   if (!quantize) throw new Error("duration policy 必须为 nearest、floor 或 ceil");
-  return Math.max(4, Math.min(15, quantize(source)));
+  return Math.max(4, Math.min(maximum, quantize(source)));
 }
 
 function resolvePackageEntryPath(value, packagePath, manifestPath) {
@@ -486,7 +489,7 @@ export function syncJobsFromH3Package(manifest, manifestPath, packageManifest, p
     const pictureAbsolutes = pictures.map((picture) => resolvePackageEntryPath(picture, packagePath, manifestPath));
     for (const picture of pictureAbsolutes) if (!fs.existsSync(picture)) throw new Error(`${segmentId} 参考图不存在: ${picture}`);
     const sourceDuration = Number(item.seconds);
-    const duration = input.duration == null ? quantizeH3Duration(sourceDuration, durationPolicy) : quantizeH3Duration(input.duration, "nearest");
+    const duration = input.duration == null ? quantizeH3Duration(sourceDuration, durationPolicy, provider) : quantizeH3Duration(input.duration, "nearest", provider);
     const match = /^E(\d+)-/.exec(segmentId);
     if (!match) throw new Error(`片段号必须采用 E01-01 格式: ${segmentId}`);
     const prompt = fs.readFileSync(promptAbsolute, "utf8");
@@ -526,6 +529,8 @@ function relativeToFile(fromFile, targetFile) {
 }
 
 export function exportCompShareJob(manifest, manifestPath, id, outPath, input = {}) {
+  const realityErrors = realityGate(manifest, manifestPath);
+  if (realityErrors.length) throw new Error(realityErrors.join('\n'));
   const job = arrayOf(manifest.jobs).find((item) => item.jobId === id);
   if (!job) throw new Error(`找不到 job: ${id}`);
   if (job.provider !== "compshare") throw new Error(`${id} 的 provider 不是 compshare`);
@@ -542,6 +547,11 @@ export function exportCompShareJob(manifest, manifestPath, id, outPath, input = 
   });
   const exported = {
     schemaVersion: "1.0",
+    integrityVersion: 1,
+    realityAudit: (() => {
+      const auditPath = path.resolve(path.dirname(manifestPath), manifest.policies?.realityAuditPath || 'reality-audit.json');
+      return fs.existsSync(auditPath) ? { path: relativeToFile(outPath, auditPath), sha256: crypto.createHash('sha256').update(fs.readFileSync(auditPath)).digest('hex') } : null;
+    })(),
     provider: "compshare",
     sourceJobId: job.jobId,
     sourceStatus: job.status,
@@ -567,6 +577,8 @@ export function exportCompShareJob(manifest, manifestPath, id, outPath, input = 
 }
 
 export function approveJob(manifest, manifestPath, id, by, note = "") {
+  const realityErrors = realityGate(manifest, manifestPath);
+  if (realityErrors.length) throw new Error(realityErrors.join('\n'));
   const job = arrayOf(manifest.jobs).find((item) => item.jobId === id);
   if (!job) throw new Error(`找不到 job: ${id}`);
   const artifacts = artifactMap(manifest);
@@ -676,7 +688,8 @@ export function refreshManifest(manifest, manifestPath) {
 function validateH3Job(job, index, manifest, manifestPath, errors, warnings) {
   const at = `$.jobs[${index}]`;
   if (!H3_MODES.has(job.mode)) issue(errors, "JOB_MODE", `${at}.mode`, "H3 mode 枚举无效");
-  if (!Number.isInteger(job.duration) || job.duration < 4 || job.duration > 15) issue(errors, "H3_DURATION", `${at}.duration`, "H3 任务时长必须为 4–15 秒整数");
+  const maximumDuration = job.provider === "compshare" ? 30 : 15;
+  if (!Number.isInteger(job.duration) || job.duration < 4 || job.duration > maximumDuration) issue(errors, "H3_DURATION", `${at}.duration`, `H3 任务时长必须为 4–${maximumDuration} 秒整数`);
   if (!DIALOGUE_ROUTES.has(job.dialogueRoute)) issue(errors, "DIALOGUE_ROUTE", `${at}.dialogueRoute`, "dialogueRoute 枚举无效");
   if (!GENERATION_RESOLUTIONS.has(job.resolution)) issue(errors, "JOB_RESOLUTION", `${at}.resolution`, "H3 resolution 必须为 768P 或 2K");
   if (job.ratio !== "adaptive" && !ASPECT_PRESETS[job.ratio]) issue(errors, "JOB_RATIO", `${at}.ratio`, "H3 ratio 枚举无效");
@@ -787,6 +800,7 @@ export function validateManifest(manifest, manifestPath) {
     return { ok: false, errors, warnings, stats };
   }
   if (manifest.schemaVersion !== "1.0") issue(errors, "SCHEMA_VERSION", "$.schemaVersion", "schemaVersion 必须为 1.0");
+  for (const message of realityGate(manifest, manifestPath)) issue(errors, "REALITY_NOT_READY", "$.policies.realityAuditPath", message);
   if (!isObject(manifest.project)) issue(errors, "PROJECT", "$.project", "project 必须是对象");
   else {
     requireText(errors, manifest.project.id, "$.project.id", "project.id");

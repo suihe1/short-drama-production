@@ -484,6 +484,22 @@ test("post plan assembles succeeded clips to 1920x1080 timeline", () => {
 });
 
 let passed = 0;
+test("CompShare output supports 30 seconds without changing official or reference limits", () => {
+  for (const seconds of [4, 15, 16, 30]) assert.equal(quantizeH3Duration(seconds, 'nearest', 'compshare'), seconds);
+  assert.equal(quantizeH3Duration(29.6, 'nearest', 'compshare'), 30);
+  assert.throws(() => quantizeH3Duration(31, 'nearest', 'compshare'));
+  assert.throws(() => quantizeH3Duration(16));
+  const fixture = setup('duration-provider');
+  const job = addValidJob(fixture);
+  job.provider = 'compshare';
+  for (const seconds of [4, 16, 30, 31, 3, 15.5]) {
+    job.duration = seconds;
+    const errors = validateManifest(fixture.manifest, fixture.manifestPath).errors;
+    assert.equal(errors.some(e => e.code === 'H3_DURATION'), ![4, 16, 30].includes(seconds));
+  }
+  job.duration = 30; job.provider = 'minimax-official';
+  assert.ok(validateManifest(fixture.manifest, fixture.manifestPath).errors.some(e => e.code === 'H3_DURATION'));
+});
 try {
   for (const { name, fn } of tests) {
     try {

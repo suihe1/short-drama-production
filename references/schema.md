@@ -214,7 +214,7 @@
 
 H3 Ref2VA 合同：
 
-- `duration` 为 4–15 秒整数。
+- `duration`：CompShare 为 4–30 秒整数；MiniMax 官方适配器仍按已配置的 4–15 秒整数检查。参考音频/视频的时长限制不随输出时长扩大。
 - `reference_image` ≤ 9。
 - `reference_video` ≤ 3；每条 2–15 秒，总计 ≤ 15 秒。
 - `reference_audio` ≤ 3；每条 2–15 秒，总计 ≤ 15 秒。

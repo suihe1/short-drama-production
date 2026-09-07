@@ -53,6 +53,11 @@
 
 ```bash
 node scripts/reality-audit.mjs validate <project>/reality-audit.json
+node scripts/reality-audit.mjs preflight <project>/reality-audit.json
 ```
 
-校验器只保证审计字段和来源齐全；画面是否真的符合现实流程仍需人工对照关键帧。
+`validate` 只保证结构齐全；`preflight` 要求所有场景的三个验收项均为 `pass`，`pending`、`fail` 和 `not-applicable` 均阻止投产。画面是否真的符合现实流程仍需人工对照关键帧。
+
+现实题材在 `production.json` 的 `policies` 中设置 `realityRequired: true`，可用 `realityAuditPath` 指定相对于 production.json 的审计文件路径；默认读取同目录 `reality-audit.json`。默认文件存在时也自动检查。总控审批、CompShare 导出和官方 H3 预检执行此门。新 CompShare 导出包绑定审计文件路径与 SHA-256；预检和提交时审计文件改变或缺失都会阻止继续。旧包缺少 integrityVersion/realityAudit 标记时必须重新导出才能提交。客户端不跟踪生产配置的后续变化，改变现实题材开关或审计路径后也必须重新审批与导出。
+
+离线测试：`node scripts/reality-gate-test.mjs`，不访问任何生成 API。

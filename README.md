@@ -7,7 +7,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](./LICENSE)
 ![Node.js ≥ 18](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=node.js&logoColor=white)
 ![Python ≥ 3.10](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=white)
-![Tests: 21/21](https://img.shields.io/badge/tests-21%2F21-brightgreen)
+![Tests: 22/22](https://img.shields.io/badge/tests-22%2F22-brightgreen)
 ![Default: 16:9](https://img.shields.io/badge/default-16%3A9-black)
 
 **不是再写一条“万能 Prompt”。** 这是一个面向 Codex 的 AI 短剧生产总控 skill：把大纲、角色、美术、剧本、导演、技术分镜、H3 任务、声音、粗剪与 QC 串成一条有状态、有依赖、有审批边界的生产链。
@@ -66,6 +66,16 @@ flowchart LR
 
 ## 核心能力
 
+### 可视化故事板 · 免费离线审阅
+
+镜头卡片并列展示构图规划、任务参考素材与生成视频，支持集数/关键词筛选、时间带定位、按规划时长预览、多版本切换和返工笔记导出。缺少媒体时显示占位，不调用生成 API。
+
+```bash
+node scripts/storyboard-view.mjs examples/offline/storyboard.json --out runs/storyboard-demo.html
+```
+
+打开生成的 HTML 即可使用。接入真实项目与功能边界见[故事板使用说明](./references/storyboard-view.md)。
+
 ### 1. 制片级状态管理
 
 - 制品登记、依赖哈希、过期传播与重新审批。
@@ -122,6 +132,15 @@ flowchart LR
 
 ### 2. 在 Codex 中调用
 
+首次安装，建议先运行免费离线演练：
+
+```bash
+node scripts/doctor.mjs
+node scripts/offline-demo.mjs
+```
+
+检查器报告本机依赖；示例生成生产报告，并演示“大纲修改 → 剧本过期”。不需要 API 密钥，不调用生成接口。详见[首次运行与依赖说明](./references/getting-started.md)。
+
 ```text
 $short-drama-production 为这个项目建立 16:9 短剧生产状态，先检查现有制品和依赖，不提交任何付费任务。
 ```
@@ -154,7 +173,7 @@ node scripts/production-kit.mjs render <project>/production.json > production-re
 | 组件 | 已实现能力 | 当前边界 |
 | --- | --- | --- |
 | MiniMax 官方 H3 | 多模态参考、预检、确认提交、轮询、下载 | 需自行提供官方密钥 |
-| CompShare H3 | 本地参考图内嵌、预检、Context-IR、确认提交 | 当前适配器仅支持参考图任务 |
+| CompShare H3 | 本地参考图内嵌、预检、Context-IR、确认提交；输出时长 4–30 秒 | 当前适配器仅支持参考图任务 |
 | Fish Audio | 音色发现、试听、授权克隆、母版登记 | 不替代声音授权判断 |
 | FFmpeg | 顺序粗剪计划、显式执行、基础媒体 QC | 不提供复杂多轨剪辑与调色 |
 
@@ -190,10 +209,13 @@ short-drama-production/
 
 ```bash
 node scripts/selftest.mjs
+node scripts/reality-gate-test.mjs
+node scripts/storyboard-view-test.mjs
+python scripts/compshare-offline-test.py
 python scripts/compshare-h3.py --help
 ```
 
-当前发布包包含 **21 项确定性测试**，覆盖初始化、依赖失效、审批、两条分镜接入路线、H3 预检、CompShare 付费确认、声音登记、粗剪和现实真实性审计。
+当前发布包包含 **22 项核心确定性测试**，覆盖初始化、依赖失效、审批、两条分镜接入路线、H3 预检、CompShare 时长边界、声音登记与粗剪；真实性投产门和可视化故事板另有独立离线测试。
 
 ## 推荐搭配
 
@@ -210,6 +232,10 @@ python scripts/compshare-h3.py --help
 缺失专业 skill 时仍可用 `manual` 制品接入总控，但不会冒充拥有对应专业质量门。
 
 ## 当前边界
+
+当前发布版交付的是本地故事板审阅页面。**一张图片包含多个镜头的多格故事板，以及审阅版/模型参考版/单格 PNG 导出，尚未实现**，属于下一阶段开发。返工笔记可导出，但暂不支持导入或回写项目。配套专业 skills 仍需单独获取，尚无经过验证的一键安装清单。
+
+升级后，CompShare 旧导出包需重新导出：新包包含 `integrityVersion` 和审计快照，防止继续使用已变化的审计。所有检查与示例均可离线运行；GitHub Actions 在 Windows/Linux 上运行离线测试，不配置生成密钥。
 
 本项目不内置媒体生成模型，也不提供自动口型修复、声源分离、复杂多轨剪辑、调色或逐帧视觉检测。它解决的是生产组织、执行约束与可追踪返工；外部生成能力通过适配器或独立制品接入。
 
