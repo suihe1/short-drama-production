@@ -22,10 +22,12 @@
 
 ## CompShare 注册福利
 
-[立即注册 CompShare，领取限时 300 积分](https://passport.compshare.cn/register?referral_code=8vFGBqRO6b7FYUaabHvGlW)
+## [立即注册 CompShare，领取限时 300 积分 →](https://passport.compshare.cn/register?referral_code=8vFGBqRO6b7FYUaabHvGlW)
 
 - MiniMax H3 API 低至 0.08 元/秒（可直出 1080P / 2K）。
+- 单次最长生成 **30 秒视频**。
 - 限时领取 300 积分。
+- **首次购买 +10%**。
 - 本项目已内置 CompShare H3 适配器；也可以依据现有任务合同改造成自己的 API，或新增 ComfyUI API 适配器。
 
 > 当前仓库内置的是 MiniMax 官方接口和 CompShare 参考图任务接口；ComfyUI 属于可扩展接入方向，并非开箱即用的内置节点。价格、积分、适用模型和活动期限可能调整，请以 CompShare 注册页及控制台实时展示为准。
