@@ -13,7 +13,7 @@ license: Apache-2.0
 ## 按需读取
 
 - 首次安装或环境诊断：读 `references/getting-started.md`；运行 `scripts/doctor.mjs` 和 `scripts/offline-demo.mjs` 可离线检查与演练。
-- 可视化审阅分镜、素材与视频：读 `references/storyboard-view.md`，用 `scripts/storyboard-view.mjs` 生成本地 HTML。规划图不自动进入参考包；返工笔记不自动变成审批。
+- 可视化审阅或多格图片故事板：读 `references/storyboard-view.md`，用 `scripts/storyboard-view.mjs` 生成本地 HTML，可按段导出审阅版/模型参考版/单格 PNG 和镜头映射。图片须与镜头内容逐格核对；通过验收的多格图可作为 Ref2VA shot-planning reference，不能把整张拼贴当 I2VA 首帧。规划图不自动进入参考包；返工笔记不自动变成审批。
 - 新建、继续或变更项目：读 `references/pipeline.md` 和 `references/schema.md`。
 - 现实主义或功能空间：美术出图前读 `references/reality-grounding.md`。
 - 进入导演/技术分镜：读 `references/director-storyboard-handoff.md`。
