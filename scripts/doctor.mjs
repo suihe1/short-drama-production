@@ -22,8 +22,8 @@ for (let dir = process.cwd();;) {
 }
 const roots = [...new Set([
   ...(index >= 0 ? [path.resolve(args[index + 1])] : []),
-  path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'skills'),
-  ...projectRoots, path.dirname(root)
+  ...projectRoots, path.dirname(root),
+  path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'skills')
 ])];
 function version(command, argv) {
   const result = spawnSync(command, argv, { encoding: 'utf8', timeout: 5000, windowsHide: true });

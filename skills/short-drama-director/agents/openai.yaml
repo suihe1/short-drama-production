@@ -1,0 +1,4 @@
+interface:
+  display_name: "短剧导演"
+  short_description: "把短剧剧本转成专业调度、景别、运镜与可生成分镜方案"
+  default_prompt: "使用 $short-drama-director 分析这份短剧，完成编导拆戏、场面调度和专业镜头设计，并输出通过质量门的导演镜头包。"

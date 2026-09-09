@@ -23,6 +23,6 @@ node scripts/offline-demo.mjs
 
 检查器在用户 skills 目录、当前目录及祖先目录的 `.agents/skills` 和本 skill 的同级目录查找专业 skill。也可传 `--skills-dir <目录>`；`--json` 输出机器可读结果。检测到文件只说明已安装，不代表版本或行为兼容。
 
-本仓库地址：https://github.com/suihe1/short-drama-production 。推荐搭配的专业 skills 没有随本仓库分发；目前没有在本仓库中验证过的一键安装源或固定版本锁定清单。请从各 skill 的原始发布方获取，安装后再运行检查器。不得把本机私有路径当作公共下载地址，也不要把不明来源的同名 skill 视为官方版本。官方 h3-prompt-writing 缺失时停在技术分镜准备阶段。
+本仓库已在 skills/ 分发七个配套版本。执行 node scripts/install-bundle.mjs --dest <目标 skills 目录> 预览，加 --apply 安装；八个 skill 必须位于同一父目录。已有同名目录时不会覆盖。安装包测试会在临时目录真实安装并运行各 skill 回归。开发静态检查另需 python -m pip install -r requirements-dev.txt，再运行 python scripts/validate-skills.py；PyYAML 不属于日常制作依赖。
 
 Python、FFmpeg 缺失不会阻止离线总控示例。检查器只检查程序版本和文件，不检查余额、密钥有效性或在线 API 是否可用。

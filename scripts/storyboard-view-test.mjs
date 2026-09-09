@@ -20,4 +20,8 @@ const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 assert.throws(()=>buildView({episodes:[{ep:1,segments:[{id:'bad',cuts:[{seconds:-1}]}]}]},boardPath),/时长无效/);
 assert.equal(buildView({episodes:[]},boardPath).shots.length,0);
+const changed=structuredClone(board);changed.episodes[0].segments[0].h3Prompt='changed prompt not displayed in review';
+assert.notEqual(buildView(changed,boardPath,production,boardPath).sourceRevision,data.sourceRevision);
+const duplicate=structuredClone(board);duplicate.episodes[0].segments.push(duplicate.episodes[0].segments[0]);
+assert.throws(()=>buildView(duplicate,boardPath),/重复/);
 console.log('PASS storyboard view: timeline, variants, episode isolation, missing media, unsafe text escaping, script syntax, invalid duration, empty board');

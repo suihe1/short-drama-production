@@ -64,8 +64,27 @@ export function buildEditPlan(manifest, manifestPath, options = {}) {
     .map((job, index) => ({ job, index }))
     .filter(({ job }) => job.status === "succeeded" && inRange(job.episode, range))
     .sort((a, b) => a.job.episode - b.job.episode || Number(a.job.sequence ?? a.index) - Number(b.job.sequence ?? b.index));
+  const groups = new Map();
+  for (const entry of jobs) {
+    const key = `${entry.job.episode}/${entry.job.clipId}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(entry);
+  }
+  const selections = options.takeSelections ?? {};
+  if (!selections || typeof selections !== 'object' || Array.isArray(selections)) throw new Error('选片表必须是 episode/clipId 到 jobId 的对象');
+  for (const key of Object.keys(selections)) if (!groups.has(key)) throw new Error(`选片表包含当前范围内没有成功素材的片段：${key}`);
+  for (const value of Object.values(selections)) if (typeof value !== 'string' || !value.trim()) throw new Error('选片表的 jobId 必须是非空字符串');
+  const selectedJobs = [];
+  for (const [key, candidates] of groups) {
+    const selected = Object.hasOwn(selections, key) ? selections[key] : null;
+    if (candidates.length > 1 && !selected) throw new Error(`${key} 有多个成功版本，请用 --select-file 明确选用 jobId`);
+    const entry = selected ? candidates.find(item => item.job.jobId === selected) : candidates[0];
+    if (!entry) throw new Error(`${key} 指定的 ${selected} 不是该片段的成功版本`);
+    selectedJobs.push(entry);
+  }
+  selectedJobs.sort((a, b) => a.job.episode - b.job.episode || Number(a.job.sequence ?? a.index) - Number(b.job.sequence ?? b.index));
   const byEpisode = new Map();
-  for (const { job, index } of jobs) {
+  for (const { job, index } of selectedJobs) {
     const output = resolveStored(manifestPath, job.outputPath);
     if (!byEpisode.has(job.episode)) byEpisode.set(job.episode, []);
     byEpisode.get(job.episode).push({
@@ -128,7 +147,7 @@ export function ffmpegArgsForEpisode(plan, episode) {
     streams.push(`[v${index}][a${index}]`);
   });
   filters.push(`${streams.join("")}concat=n=${episode.clips.length}:v=1:a=1[outv][outa]`);
-  return [...inputs, "-filter_complex", filters.join(";"), "-map", "[outv]", "-map", "[outa]", "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", String(plan.format.sampleRate), "-movflags", "+faststart", "-y", episode.output];
+  return [...inputs, "-filter_complex", filters.join(";"), "-map", "[outv]", "-map", "[outa]", "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", String(plan.format.sampleRate), "-movflags", "+faststart", "-n", episode.output];
 }
 
 export function probeMedia(file, ffprobe = findFfprobe()) {
@@ -156,6 +175,14 @@ export function preflightEditPlan(plan, options = {}) {
         errors.push(`${clip.jobId} 输出不存在: ${clip.path}`);
         continue;
       }
+      if (!clip.sha256 || fileSha256(clip.path) !== clip.sha256) {
+        errors.push(`${clip.jobId} 素材哈希变化或缺失，请重新选片并生成计划`);
+        continue;
+      }
+      if (clip.trimIn !== 0 || clip.trimOut !== clip.expectedSeconds) {
+        errors.push(`${clip.jobId} 当前顺序拼接工具不支持自定义裁切，请使用外部剪辑工具`);
+        continue;
+      }
       if (!ffprobe) continue;
       const probe = probeMedia(clip.path, ffprobe);
       if (probe.error) {
@@ -181,18 +208,28 @@ export function preflightEditPlan(plan, options = {}) {
 
 export function qcEpisode(plan, episode, options = {}) {
   const output = episode.output;
-  const issues = [];
   if (!fs.existsSync(output) || !fs.statSync(output).isFile()) return { ok: false, output, issues: [{ severity: "critical", code: "OUTPUT_MISSING", message: "粗剪输出不存在" }] };
   const probe = probeMedia(output, options.ffprobe === undefined ? findFfprobe() : options.ffprobe);
-  if (!probe.available) return { ok: true, output, issues: [{ severity: "medium", code: "FFPROBE_MISSING", message: "未安装 ffprobe，无法执行技术流检查" }] };
+  return evaluateEpisodeProbe(plan, episode, probe);
+}
+
+export function evaluateEpisodeProbe(plan, episode, probe) {
+  const output = episode.output;
+  const issues = [];
+  if (!probe.available) return { ok: false, verified: false, output, issues: [{ severity: "medium", code: "FFPROBE_MISSING", message: "未安装 ffprobe，技术 QC 未完成" }] };
   if (probe.error) return { ok: false, output, issues: [{ severity: "critical", code: "DECODE_FAILED", message: probe.error }] };
   const video = arrayOf(probe.streams).find((stream) => stream.codec_type === "video");
   const audio = arrayOf(probe.streams).find((stream) => stream.codec_type === "audio");
   if (!video) issues.push({ severity: "critical", code: "VIDEO_STREAM_MISSING", message: "没有视频流" });
   if (!audio) issues.push({ severity: "high", code: "AUDIO_STREAM_MISSING", message: "没有音频流" });
   if (video && (video.width !== plan.format.width || video.height !== plan.format.height)) issues.push({ severity: "high", code: "DIMENSION_MISMATCH", message: `实际 ${video.width}x${video.height}，目标 ${plan.format.width}x${plan.format.height}` });
+  if (video) {
+    const fps = fpsNumber(video.avg_frame_rate);
+    if (!Number.isFinite(fps) || fps <= 0 || Math.abs(fps - plan.format.fps) > 0.05) issues.push({ severity: 'high', code: 'FPS_MISMATCH', message: `实际帧率 ${video.avg_frame_rate ?? '未知'}，目标 ${plan.format.fps}` });
+  }
+  if (audio && (Number(audio.sample_rate) !== plan.format.sampleRate || Number(audio.channels) !== 2)) issues.push({ severity: 'high', code: 'AUDIO_FORMAT_MISMATCH', message: '音频采样率或声道与交付规格不符' });
   const duration = Number(probe.format?.duration);
-  if (Number.isFinite(duration) && Math.abs(duration - episode.expectedSeconds) > Math.max(0.5, episode.expectedSeconds * 0.01)) issues.push({ severity: "high", code: "DURATION_MISMATCH", message: `实际 ${duration.toFixed(3)}s，期望 ${episode.expectedSeconds}s` });
+  if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(episode.expectedSeconds) || episode.expectedSeconds <= 0 || Math.abs(duration - episode.expectedSeconds) > Math.max(0.5, episode.expectedSeconds * 0.01)) issues.push({ severity: "high", code: "DURATION_MISMATCH", message: `实际 ${probe.format?.duration ?? '未知'}s，期望 ${episode.expectedSeconds}s` });
   return { ok: !issues.some((item) => ["critical", "high"].includes(item.severity)), output, duration, issues };
 }
 
@@ -205,7 +242,7 @@ function usage() {
   console.log(`short-drama post toolkit
 
 Usage:
-  node scripts/post-kit.mjs plan <production.json> --out <edit-plan.json> [--eps 1-3] [--output-dir edit]
+  node scripts/post-kit.mjs plan <production.json> --out <edit-plan.json> [--eps 1-3] [--output-dir edit] [--select-file takes.json]
   node scripts/post-kit.mjs preflight <edit-plan.json>
   node scripts/post-kit.mjs assemble <edit-plan.json> [--ep 1] [--execute]
   node scripts/post-kit.mjs qc <edit-plan.json> [--ep 1]
@@ -220,7 +257,9 @@ function main() {
     const manifestPath = path.resolve(target);
     const out = path.resolve(option(args, "--out", path.join(path.dirname(manifestPath), "edit-plan.json")));
     if (fs.existsSync(out) && !args.includes("--force")) throw new Error(`输出已存在，使用 --force 才能覆盖: ${out}`);
-    const plan = buildEditPlan(readJson(manifestPath), manifestPath, { episodes: parseEpisodeRange(option(args, "--eps", "")), outputDir: option(args, "--output-dir", path.join(path.dirname(manifestPath), "edit")) });
+    const selectionFile = option(args, '--select-file', null);
+    if (args.includes('--select-file') && (!selectionFile || selectionFile.startsWith('--'))) throw new Error('--select-file 缺少文件路径');
+    const plan = buildEditPlan(readJson(manifestPath), manifestPath, { episodes: parseEpisodeRange(option(args, "--eps", "")), outputDir: option(args, "--output-dir", path.join(path.dirname(manifestPath), "edit")), takeSelections: selectionFile ? readJson(path.resolve(selectionFile)) : {} });
     writeJson(out, plan);
     console.log(out);
     return;

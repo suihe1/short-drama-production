@@ -19,6 +19,12 @@ jobs:
       - run: node scripts/selftest.mjs
       - run: node scripts/reality-gate-test.mjs
       - run: node scripts/storyboard-view-test.mjs
+      - run: node scripts/review-handoff-test.mjs
+      - run: node scripts/post-workflow-test.mjs
+      - run: node scripts/bundle-test.mjs
+      - run: node skills/short-drama-director/scripts/format-handoff-test.mjs
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python scripts/validate-skills.py
       - run: python scripts/compshare-offline-test.py
       - run: node scripts/offline-demo.mjs
       - run: node scripts/storyboard-view.mjs examples/offline/storyboard.json --out runs/storyboard-demo.html

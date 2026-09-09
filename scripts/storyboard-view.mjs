@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
 export function buildView(board, boardPath, production = {}, productionPath = boardPath, options = {}) {
@@ -11,6 +12,7 @@ export function buildView(board, boardPath, production = {}, productionPath = bo
     return fs.existsSync(absolute) && fs.statSync(absolute).isFile() ? pathToFileURL(absolute).href : null;
   }
   const shots = [];
+  const segmentKeys = new Set();
   const embedded = new Map();
   let embeddedBytes = 0;
   function exportImage(value) {
@@ -27,6 +29,10 @@ export function buildView(board, boardPath, production = {}, productionPath = bo
     return uri;
   }
   for (const ep of board.episodes) for (const seg of ep.segments || []) {
+    if (!Number.isInteger(ep.ep) || ep.ep < 1 || typeof seg.id !== 'string' || !seg.id.trim()) throw new Error('集号须为正整数，片段须有非空 id');
+    const segmentKey = `${ep.ep}/${seg.id}`;
+    if (segmentKeys.has(segmentKey)) throw new Error(`片段标识重复：${segmentKey}`);
+    segmentKeys.add(segmentKey);
     if (options.segment && seg.id !== options.segment) continue;
     const jobs = (production.jobs || []).filter(j => Number(j.episode) === Number(ep.ep) && [seg.id, seg.sourceClipId].filter(Boolean).includes(j.clipId));
     const variants = jobs.map(j => ({ id: j.jobId, status: j.status, video: media(j.outputPath, productionPath), refs: (j.references || []).map(r => ({ role: r.role, purpose: r.purpose || '', url: media(r.path, productionPath) })) }));
@@ -40,12 +46,14 @@ export function buildView(board, boardPath, production = {}, productionPath = bo
     }
   }
   if (options.segment && !shots.length) throw new Error(`找不到有镜头的片段 ${options.segment}`);
-  return { title: production.project?.title || board.source || '故事板', aspect: board.aspectRatio || '16:9', shots };
+  const sourceRevision = createHash('sha256').update(JSON.stringify({board, production})).digest('hex');
+  return { title: production.project?.title || board.source || '故事板', aspect: board.aspectRatio || '16:9', sourceRevision, shots };
 }
 
 export function renderView(data) {
+  data = { ...data, reviewIdentity: createHash('sha256').update(JSON.stringify(data)).digest('hex') };
   const template = fs.readFileSync(new URL('../assets/storyboard-view.html', import.meta.url), 'utf8');
-  return template.replace('/*STORYBOARD_DATA*/null', () => JSON.stringify(data).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')).replace('/*SHEET_EXPORT_CODE*/', () => fs.readFileSync(new URL('../assets/sheet-export.js', import.meta.url), 'utf8'));
+  return template.replace('/*STORYBOARD_DATA*/null', () => JSON.stringify(data).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')).replace('/*SHEET_EXPORT_CODE*/', () => fs.readFileSync(new URL('../assets/sheet-export.js', import.meta.url), 'utf8') + '\n' + fs.readFileSync(new URL('../assets/review-session.js', import.meta.url), 'utf8'));
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -58,8 +66,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const productionPath = get('--production');
     const out = get('--out');
     if (!out) throw new Error('必须指定 --out');
-    const board = JSON.parse(fs.readFileSync(boardPath, 'utf8'));
-    const production = productionPath ? JSON.parse(fs.readFileSync(productionPath, 'utf8')) : {};
+    const board = JSON.parse(fs.readFileSync(boardPath, 'utf8').replace(/^\uFEFF/, ''));
+    const production = productionPath ? JSON.parse(fs.readFileSync(productionPath, 'utf8').replace(/^\uFEFF/, '')) : {};
     const segmentIndex = args.indexOf('--segment');
     if (segmentIndex >= 0 && (!args[segmentIndex + 1] || args[segmentIndex + 1].startsWith('--'))) throw new Error('--segment 缺少段号');
     const data = buildView(board, boardPath, production, productionPath || boardPath, { segment: segmentIndex >= 0 ? args[segmentIndex + 1] : null });

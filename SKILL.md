@@ -12,6 +12,8 @@ license: Apache-2.0
 
 ## 按需读取
 
+- 组织整剧或跨部门返工：读 `references/company-workflow.md`，明确内容所有者、阶段出口和选片/锁画职责。专业 skill 独立工作时不重复承担总控审批。
+- 到达人工审批门、交付报告或继续待审项目：读 `references/review-handoff.md`。主动展示当前版本，说明检查重点和回复方式；不能只生成文件并静默等待。
 - 首次安装或环境诊断：读 `references/getting-started.md`；运行 `scripts/doctor.mjs` 和 `scripts/offline-demo.mjs` 可离线检查与演练。
 - 可视化审阅或多格图片故事板：读 `references/storyboard-view.md`，用 `scripts/storyboard-view.mjs` 生成本地 HTML，可按段导出审阅版/模型参考版/单格 PNG 和镜头映射。图片须与镜头内容逐格核对；通过验收的多格图可作为 Ref2VA shot-planning reference，不能把整张拼贴当 I2VA 首帧。规划图不自动进入参考包；返工笔记不自动变成审批。
 - 新建、继续或变更项目：读 `references/pipeline.md` 和 `references/schema.md`。
@@ -30,7 +32,7 @@ license: Apache-2.0
 1. `production.json` 是状态源；专业 JSON 是内容源，不复制大段正文。
 2. 上游文件或依赖哈希变化后先 `refresh`；受影响下游必须重新审批。
 3. 模型负责创作与审美；脚本只检查 ID、依赖、哈希、时长、模式、引用和授权。
-4. 付费提交、批量任务、重试、发布和覆盖成片均需用户当次明确授权；已创建任务先查询，不盲目重提。
+4. 付费提交、批量、重试、发布和覆盖成片必须落在用户明确授权的对象、范围与费用内；已有授权覆盖时不重复询问，超范围再确认。已创建任务先查询，不盲目重提。
 5. 默认先做 1 个高暴露度样片，再扩到一场或一集；剧本、导演和分镜默认每批 1–3 集。
 6. 新项目默认 16:9、1920×1080、24 fps、`landscape-ensemble`；画幅变化使全部非源制品过期。
 7. 现实题材设置 `policies.realityRequired: true` 并维护同目录 `reality-audit.json`；投产前运行 `reality-audit.mjs preflight`，三个验收项全部 `pass` 才可继续。先核对功能、设备、拓扑、人流和运行状态；“空景”不能删除现实必需设备和生活痕迹。
@@ -41,6 +43,8 @@ license: Apache-2.0
 12. 正式 H3 执行提示词遵守官方英文结构；中文保留在创作 brief、对白、歌词和可见文字中。
 
 ## 生产流程
+
+每个既有人工审批门都要完成交接：先自检和修复已知问题，再打开可审阅报告、给出绝对路径链接，明确本轮范围、最多三个检查重点、已知缺口及确认后的下一步，并在对话中主动请求具体结论。已有授权覆盖当前内容时直接使用，不重复询问。用户未确认时只等待依赖该决策的工作，继续可独立完成的准备。详细阶段入口、反馈和哈希复核见 `references/review-handoff.md`。
 
 ```text
 需求 → 大纲 → 角色/美术 → 剧本 → 导演 → 技术分镜

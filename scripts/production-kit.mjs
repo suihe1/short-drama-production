@@ -958,6 +958,21 @@ function shortHash(value) {
   return isFilled(value) ? value.slice(0, 10) : "—";
 }
 
+// Uses the refreshed manifest snapshot; this is guidance, never an approval.
+export function reviewQueue(manifest) {
+  const artifacts = arrayOf(manifest.artifacts);
+  const byId = new Map(artifacts.map(a => [a.id, a]));
+  const ready = [], blocked = [];
+  for (const artifact of artifacts) {
+    if (!["review", "stale"].includes(artifact.status)) continue;
+    const dependencies = arrayOf(artifact.dependsOn).filter(id => byId.get(id)?.status !== "approved");
+    const item = { id: artifact.id, kind: artifact.kind, episodes: artifact.episodes, path: artifact.path, dependencies };
+    if (artifact.status === "review" && !dependencies.length) ready.push(item);
+    else blocked.push(item);
+  }
+  return { ready, blocked };
+}
+
 export function statusText(manifest) {
   const lines = [];
   lines.push(`${manifest.project.title}｜短剧生产状态`, "");
@@ -970,8 +985,14 @@ export function statusText(manifest) {
   if (!arrayOf(manifest.jobs).length) lines.push("- 尚未登记");
   else for (const job of manifest.jobs) lines.push(`- ${job.jobId}｜${job.provider}｜E${String(job.episode).padStart(2, "0")} ${job.clipId}｜${job.mode}/${job.dialogueRoute}｜${job.ratio}/${job.resolution}｜${job.duration}s｜${job.status}｜成本授权 ${job.costApproved ? "是" : "否"}`);
   const attention = arrayOf(manifest.artifacts).filter((artifact) => new Set(["missing", "stale", "review", "blocked", "failed"]).has(artifact.status));
+  const reviews = reviewQueue(manifest);
+  lines.push("", "人工审阅交接（当前状态快照）：");
+  for (const item of reviews.ready) lines.push(`- 待展示 ${item.id}｜${item.episodes}｜内容源 ${item.path}；先自检，再打开对应报告并说明检查重点，在对话中请求本版本结论。`);
+  for (const item of reviews.blocked) lines.push(`- 暂不请用户批准 ${item.id}：${item.dependencies.length ? `先处理依赖 ${item.dependencies.join(", ")}` : "先修复过期内容并刷新状态"}。`);
+  if (!reviews.ready.length) lines.push("- 暂无可直接交接的待审制品；缺失或过期内容先由 agent 整理，不能要求用户批准占位内容。");
   lines.push("", "下一步：");
-  if (attention.length) lines.push(`- 优先处理 ${attention[0].id}（${attention[0].status}）`);
+  if (reviews.ready.length) lines.push(`- 完成 ${reviews.ready[0].id} 的审阅交接；用户结论只控制依赖它的步骤，独立准备可继续。`);
+  else if (attention.length) lines.push(`- 优先处理 ${attention[0].id}（${attention[0].status}）`);
   else if (!manifest.artifacts.some((artifact) => artifact.kind === "outline")) lines.push("- 运行 novel-outline 并登记 outline 制品");
   else if (!manifest.artifacts.some((artifact) => artifact.kind === "script")) lines.push("- 进入首批剧本阶段");
   else if (!manifest.artifacts.some((artifact) => artifact.kind === "director")) lines.push("- 进入 short-drama-director 导演阶段");

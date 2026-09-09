@@ -1,0 +1,585 @@
+{
+  "source": "渡口",
+  "episodes": [
+    {
+      "ep": 1,
+      "segments": [
+        {
+          "id": "E01-01",
+          "sceneIndex": 1,
+          "cuts": [
+            {
+              "beats": [
+                1,
+                1
+              ],
+              "seconds": 3,
+              "size": "medium",
+              "camera": "Tracking Shot",
+              "characters": [
+                "C01"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "medium shot of a young woman in a plain early-republic qipao running through thick fog along a muddy riverside path, reeds and puddles at her feet, an old leather suitcase hugged tight against her chest, hem and loose hair swept back by her motion, no pier visible yet, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                2,
+                2
+              ],
+              "seconds": 3,
+              "size": "extreme-wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "extreme wide shot of a fog-drowned wooden ferry pier at dawn, plank walkway dissolving into thick mist, the faint silhouette of an old ferryman squatting at the bow of a wooden ferry with a glowing tobacco pipe, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                3,
+                3
+              ],
+              "seconds": 4,
+              "size": "wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "wide shot of the old ferryman in a straw hat and straw rain cape standing at the bow of his moored wooden ferry with one hand cupped to his mouth, calling toward the foggy shore, the ferry's bench cabin and patched awning behind him, gangplank and mooring posts visible, heavy dawn fog, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                4,
+                5
+              ],
+              "seconds": 5,
+              "size": "wide",
+              "camera": "Tracking Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "wide shot of a middle-aged peddler hurrying along a wet gangplank carrying a shoulder pole with two goods baskets, motion in his stride, fog swallowing the pier behind him, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 3.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 6.00-second mark of the target video; Picture 4 (from Shot 4) aligns with the 10.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. The cold open follows <Picture 1>: a young woman in a plain qipao runs through thick fog along a muddy riverside path, reeds and puddles at her feet, an old leather suitcase hugged tight against her chest; a tracking shot follows her from behind, the pier not yet in sight as the fog swallows her silhouette.\n[Shot 2] At 00:03.000, the camera cuts to the extreme wide view of <Picture 2>: the run ends and the wooden pier finally emerges from the fog, the old ferryman squatting at the bow of the ferry as a faint silhouette with his pipe ember glowing through the mist; the camera holds a static shot while distant watchman clappers knock, muffled as if wrapped in cotton.\n[Shot 3] At 00:06.000, the shot cuts to the framing of <Picture 3>: the ferryman stands at the bow with one hand cupped to his mouth, the camera holds a static shot, and the weathered old boatman with a loud, coarse, unhurried voice (S1) calls toward the shore: <d>[Chinese] 上船喽——过河的抓紧，雾要变天。</d>\n[Shot 4] At 00:10.000, the shot cuts to <Picture 4> and a tracking shot follows the middle-aged peddler with a bright, breathless voice (S2) hurrying along the gangplank under a loaded shoulder pole, shouting: <d>[Chinese] 等等二爷我！这雾天赶船，命都得跑掉半条。</d>\n\noverall_soundscape: Rapid running footsteps splash along a wet riverside path through fog-damped silence, water laps softly against the pilings, wooden clappers knock twice in the far distance, and rattling baskets close in later along the gangplank.\n\nnon_diegetic_music: Sustained low strings at a very slow tempo, barely above silence."
+        },
+        {
+          "id": "E01-02",
+          "sceneIndex": 1,
+          "cuts": [
+            {
+              "beats": [
+                6,
+                6
+              ],
+              "seconds": 3,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C03",
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot at the ferry gunwale in morning fog, a middle-aged peddler stepping aboard with a loaded shoulder pole, an old ferryman lending a hand to help set the load down into the cabin, both lit by flat diffuse fog light, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                7,
+                7
+              ],
+              "seconds": 3,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "medium shot on board the wooden ferry in morning fog, the old ferryman in a straw hat and straw rain cape standing by the cabin entrance facing into the cabin, tobacco pipe in his teeth, speaking dryly toward the inside, bench cabin and patched awning around him, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                8,
+                8
+              ],
+              "seconds": 4,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot inside the wooden ferry cabin, the grinning middle-aged peddler seated on a bench with his shoulder-pole baskets set down beside him, patting the baskets proudly, wooden benches and patched awning of the cabin around him, fog-diffused morning light, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                9,
+                9
+              ],
+              "seconds": 4,
+              "size": "close",
+              "camera": "Push In",
+              "characters": [
+                "C01"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "close-up of a young woman in a plain early-republic qipao stepping onto a wet gangplank in fog, an old leather suitcase with green-tarnished brass clasps hugged against her chest, knuckles pressed white, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 3.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 6.00-second mark of the target video; Picture 4 (from Shot 4) aligns with the 10.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. The gunwale view of <Picture 1> holds as the middle-aged peddler steps aboard with his loaded shoulder pole and the old ferryman lends a hand, the two of them setting the load down into the cabin together; the camera holds a static shot as the baskets settle.\n[Shot 2] At 00:03.000, the camera cuts to <Picture 2>: on board, the ferryman stands by the cabin entrance facing into the cabin, pipe still in his teeth; the camera holds a static shot as the weathered old boatman with a coarse, dry-humored voice (S1) says toward the inside: <d>[Chinese] 胡二爷，你这担子比人金贵。</d>\n[Shot 3] At 00:06.000, the shot cuts to <Picture 3>: seated in the cabin beside his baskets, the grinning peddler pats them, and the middle-aged peddler with a bright, boastful voice (S2) laughs back over a static shot: <d>[Chinese] 那可不——吃饭的家伙，比命金贵。</d>\n[Shot 4] At 00:10.000, the shot cuts to <Picture 4>: a young woman in a plain qipao steps onto the wet gangplank with an old leather suitcase hugged to her chest, and a slow push in with small amplitude closes on her whitened knuckles around the case edge.\n\noverall_soundscape: Baskets creak softly as the load settles onto the cabin floor with a light chime of small brass bells, wood knocks gently, and slow careful footsteps creak along the wet gangplank.\n\nnon_diegetic_music: N/A"
+        },
+        {
+          "id": "E01-03",
+          "sceneIndex": 1,
+          "cuts": [
+            {
+              "beats": [
+                10,
+                10
+              ],
+              "seconds": 4,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C01",
+                "C03"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "medium shot near the bow of a wooden ferry, an old ferryman coiling rope without lifting his eyes, a young woman standing stiffly with an old leather suitcase held to her chest, fog a pale wall behind, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                11,
+                11
+              ],
+              "seconds": 3,
+              "size": "close",
+              "camera": "Push In",
+              "characters": [
+                "C01"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "close-up of the young woman tightening both arms around the old leather suitcase, chin set, eyes steady under the fog light, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                12,
+                12
+              ],
+              "seconds": 3,
+              "size": "wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "wide shot of an old ferryman pulling the gangplank aboard at the bow of a moored wooden ferry in heavy fog, a young woman with a suitcase seated behind him, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                13,
+                13
+              ],
+              "seconds": 2,
+              "size": "wide",
+              "camera": "Pull Out",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "wide shot of the wooden ferry pushing off from the pier, the old ferryman planting a long bamboo pole, the pier lantern shrinking into fog, soft wake lines on dark water, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 4.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 7.00-second mark of the target video; Picture 4 (from Shot 4) aligns with the 10.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. Holding the two-figure composition of <Picture 1> near the bow, the old ferryman keeps coiling rope without lifting his eyes; the camera holds a static shot as the weathered old boatman with a flat, indifferent voice (S1) mutters: <d>[Chinese] 箱子沉就搁船头，掉河里我可不捞。</d>\n[Shot 2] At 00:04.000, the camera cuts to the close framing of <Picture 2>: the young woman tightens both arms around the suitcase, a gentle push in with small amplitude, and the quiet young woman with a soft but unyielding voice (S2) answers: <d>[Chinese] 不劳烦。它跟我。</d>\n[Shot 3] At 00:07.000, the shot cuts to <Picture 3>: the old ferryman gives her one brief glance without a word, then pulls the gangplank aboard; the camera holds a static shot.\n[Shot 4] At 00:10.000, the shot cuts to <Picture 4> and a slow pull out opens across the dark water as (S1) plants the pole and calls: <d>[Chinese] 坐稳——开船。</d> — the ferry slides forward and the pier lantern dissolves into fog.\n\noverall_soundscape: Rope fibers rasp over the gunwale, the bamboo pole knocks once and dips with a heavy push, and the gangplank planks are dragged aboard.\n\nnon_diegetic_music: Sparse low strings at a slow tempo fade in for a few seconds and out again."
+        },
+        {
+          "id": "E01-04",
+          "sceneIndex": 2,
+          "cuts": [
+            {
+              "beats": [
+                1,
+                1
+              ],
+              "seconds": 3,
+              "size": "wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C02",
+                "C04"
+              ],
+              "props": [],
+              "frame": "wide shot of a dim wooden ferry cabin interior in fog light, goods baskets hogging half a bench, a man in a long dark coat leaning against the cabin wall with his right hand buried in his coat pocket, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                2,
+                2
+              ],
+              "seconds": 5,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot of a grinning middle-aged peddler leaning toward the cabin aisle mid-question, fog-diffused light from the opening, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                3,
+                3
+              ],
+              "seconds": 3,
+              "size": "medium",
+              "camera": "Tracking Shot",
+              "characters": [
+                "C01"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "medium shot of a young woman in a plain qipao crossing the ferry cabin to the farthest corner seat, an old leather suitcase in her arms, benches and fog light around her, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 3.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 8.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. The dim cabin of <Picture 1> holds: goods baskets hog half a bench while the man in the long dark coat leans against the wall, right hand buried in his coat pocket, completely still; the camera holds a static shot as the cabin rocks gently.\n[Shot 2] At 00:03.000, the camera cuts to the grinning peddler of <Picture 2> leaning toward the aisle, static shot, and the middle-aged peddler with a bright, over-familiar voice (S1) asks: <d>[Chinese] 姑娘头回走这条水路吧？我一看一个准。</d>\n[Shot 3] At 00:08.000, the shot cuts to <Picture 3> and a tracking shot follows the young woman crossing to the farthest corner seat without answering, settling the old leather suitcase on her knees and folding both arms around it.\n\noverall_soundscape: The hull creaks in a slow rhythm over water sliding beneath the boards, basket straps rustle, and footsteps knock softly across the deck before a bench creaks.\n\nnon_diegetic_music: N/A"
+        },
+        {
+          "id": "E01-05",
+          "sceneIndex": 2,
+          "cuts": [
+            {
+              "beats": [
+                4,
+                4
+              ],
+              "seconds": 5,
+              "size": "close",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "close-up of a middle-aged peddler half risen from a ferry bench, grinning warmly with probing eyes, dim cabin light, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                5,
+                5
+              ],
+              "seconds": 3,
+              "size": "close",
+              "camera": "Static Shot",
+              "characters": [
+                "C01"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "close-up of a young woman with eyes lowered, an old leather suitcase on her knees, both arms around it, corner shadow of a ferry cabin, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                6,
+                6
+              ],
+              "seconds": 5,
+              "size": "medium",
+              "camera": "Push In",
+              "characters": [
+                "C01",
+                "C04"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "medium shot two-figure composition in a ferry cabin, a peddler's hand reaching toward an old leather suitcase on a young woman's knees, tension in the reaching hand, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 5.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 8.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. The close framing of <Picture 1> holds on the peddler half risen from his bench; the camera holds a static shot as the peddler with a warm, pushy voice (S1) presses: <d>[Chinese] 城里亲戚接站，还是投店？二爷我熟门熟路。</d>\n[Shot 2] At 00:05.000, the camera cuts to the reverse close-up of <Picture 2>: the young woman keeps her eyes lowered over a static shot, and the quiet young woman with a flat, guarded voice (S2) replies: <d>[Chinese] 借过就好，不敢劳动。</d>\n[Shot 3] At 00:08.000, the shot cuts to <Picture 3>: his hand starts toward the suitcase on her knees while a slow push in with small amplitude tightens the frame, and (S1) grins wider: <d>[Chinese] 嗨，出门在外别客气——箱子给我，搁上头稳当。</d>\n\noverall_soundscape: A bench scrapes as he rises, clothes rustle in the narrow cabin, and the hull keeps its slow creak over passing water.\n\nnon_diegetic_music: N/A"
+        },
+        {
+          "id": "E01-06",
+          "sceneIndex": 2,
+          "cuts": [
+            {
+              "beats": [
+                7,
+                7
+              ],
+              "seconds": 2,
+              "size": "close",
+              "camera": "Static Shot",
+              "characters": [
+                "C01",
+                "C04"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "close-up of a young woman's hand slamming down on the lid of an old leather suitcase, green-tarnished brass clasp under her fingers, a reaching hand frozen mid-air at the frame edge, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                8,
+                8
+              ],
+              "seconds": 3,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot of a peddler with his hand frozen mid-air and a grin stiffening on his face, hushed dim ferry cabin around him, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                9,
+                9
+              ],
+              "seconds": 4,
+              "size": "wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "wide shot through a ferry cabin opening toward the bow, an old ferryman speaking over his shoulder without stopping his bamboo pole work, fog beyond, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                10,
+                10
+              ],
+              "seconds": 3,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot of the peddler pulling his hand back and bowing his head twice with an awkward apologetic grin, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 2.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 5.00-second mark of the target video; Picture 4 (from Shot 4) aligns with the 9.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. The insert of <Picture 1> lands hard: the young woman's hand slams down on the suitcase lid, pinning the brass clasp under her fingers — fast and hard; the camera holds a static shot on the impact.\n[Shot 2] At 00:02.000, the camera cuts to <Picture 2>: the cabin chatter dies, the peddler's reaching hand hangs frozen mid-air and his grin stiffens; static shot.\n[Shot 3] At 00:05.000, the shot cuts to <Picture 3>, through the opening toward the bow, static shot, and the weathered old boatman with a slow, even voice (S1) says without stopping his pole work: <d>[Chinese] 船上有个规矩——不问来路，不碰行李。</d>\n[Shot 4] At 00:09.000, the shot cuts to <Picture 4>: the peddler pulls his hand back and bows his head twice over a static shot, and the peddler with a deflated, placating voice (S2) mutters: <d>[Chinese] 是是，二爷我多嘴，多嘴。</d>\n\noverall_soundscape: A flat sharp slap of palm on leather cuts through the cabin followed by a sudden hush, then the bamboo pole dips and drips in a steady cycle at the bow.\n\nnon_diegetic_music: N/A"
+        },
+        {
+          "id": "E01-07",
+          "sceneIndex": 2,
+          "cuts": [
+            {
+              "beats": [
+                11,
+                11
+              ],
+              "seconds": 3,
+              "size": "extreme-wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "extreme wide shot of a wooden ferry mid-river swallowed by fog, water and mist merged into one gray sheet, the ferryman a small vertical figure at the bow, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                12,
+                12
+              ],
+              "seconds": 4,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot of a restless peddler in a ferry cabin calling toward the bow, glancing around the fog, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                13,
+                13
+              ],
+              "seconds": 4,
+              "size": "wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "wide shot of an old ferryman at the bow of a ferry in heavy fog, bamboo pole rising and falling in an unbroken rhythm, his back to the camera, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 3.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 7.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. The mid-river view of <Picture 1> holds: fog hugging the water into one gray sheet, the ferry a dark sliver, the ferryman a calm vertical figure at the bow; static shot while the peddler's restless silhouette stirs in the cabin.\n[Shot 2] At 00:03.000, the camera cuts to <Picture 2>, static shot, and the peddler with a fidgety, talk-filling voice (S1) calls toward the bow: <d>[Chinese] 老周，今儿这雾邪性，走得完吗？</d>\n[Shot 3] At 00:07.000, the shot cuts to the bow of <Picture 3>: without turning, over a static shot with the pole rising and falling, the weathered old boatman with an unhurried, granite-steady voice (S2) answers: <d>[Chinese] 走了四十年，没有走不完的河。</d>\n\noverall_soundscape: The pole enters and leaves the water in slow even strokes, fog-muffled ripples spread along the hull, and a basket strap creaks as the peddler shifts his weight.\n\nnon_diegetic_music: N/A"
+        },
+        {
+          "id": "E01-08",
+          "sceneIndex": 2,
+          "cuts": [
+            {
+              "beats": [
+                14,
+                14
+              ],
+              "seconds": 4,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C02",
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot in a ferry cabin, a peddler turned toward a man in a long dark coat who keeps his gaze on the fog outside the opening, space heavy between them, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                15,
+                15
+              ],
+              "seconds": 3,
+              "size": "close",
+              "camera": "Static Shot",
+              "characters": [
+                "C02"
+              ],
+              "props": [],
+              "frame": "close-up of a man in a long dark coat giving a single faint nod, eyes fixed on the fog outside a cabin opening, face half in shadow, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                16,
+                16
+              ],
+              "seconds": 4,
+              "size": "medium",
+              "camera": "Static Shot",
+              "characters": [
+                "C04"
+              ],
+              "props": [],
+              "frame": "medium shot of a peddler shrugging theatrically to a whole ferry cabin, arms spread, wry grin, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                17,
+                17
+              ],
+              "seconds": 3,
+              "size": "wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C03"
+              ],
+              "props": [],
+              "frame": "wide shot from inside a ferry cabin toward the bow, an old ferryman's back shaking once with a short laugh, ripples spreading from the pole strike, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 4.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 7.00-second mark of the target video; Picture 4 (from Shot 4) aligns with the 11.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. Keeping the cabin composition of <Picture 1>, the peddler turns to the man in the long dark coat; static shot, and the peddler with a probing, cheerful voice (S1) tries: <d>[Chinese] 这位先生面生得很，也是去县城？</d>\n[Shot 2] At 00:04.000, the camera cuts to the close framing of <Picture 2>: the man in the dark coat gives a single faint nod, eyes never leaving the fog; static shot.\n[Shot 3] At 00:07.000, the shot cuts to <Picture 3>: the peddler shrugs theatrically to the whole cabin, static shot, and the same cheerful voice (S1) sighs: <d>[Chinese] 得，一船的闷葫芦，就我一个人长嘴。</d>\n[Shot 4] At 00:11.000, the shot cuts to <Picture 4>: from inside the cabin the old ferryman's back shakes once with a short laugh he does not turn around for; static shot while water ticks under the hull like something counting down.\n\noverall_soundscape: The hull groans softly on a slow swell, a short huff of breath accompanies the shrug, then one dry laugh from the bow over water knocking in a steady patient rhythm.\n\nnon_diegetic_music: N/A"
+        },
+        {
+          "id": "E01-09",
+          "sceneIndex": 2,
+          "cuts": [
+            {
+              "beats": [
+                18,
+                18
+              ],
+              "seconds": 3,
+              "size": "close",
+              "camera": "Push In",
+              "characters": [
+                "C02"
+              ],
+              "props": [],
+              "frame": "close-up of a long dark coat pocket, the fabric tightening as the hidden hand inside clenches, dim cabin light, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                19,
+                19
+              ],
+              "seconds": 3,
+              "size": "close",
+              "camera": "Static Shot",
+              "characters": [
+                "C02"
+              ],
+              "props": [],
+              "frame": "close-up of a man in a long dark coat, face half in shadow, lips barely moving as he murmurs to himself, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                20,
+                20
+              ],
+              "seconds": 3,
+              "size": "wide",
+              "camera": "Static Shot",
+              "characters": [
+                "C01",
+                "C02",
+                "C04"
+              ],
+              "props": [],
+              "frame": "wide shot of a hushed ferry cabin in fog, three passengers motionless in the dim light, nobody answering the distance, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 3.00-second mark of the target video; Picture 3 (from Shot 3) aligns with the 6.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. Holding the framing of <Picture 1>, the fabric over the dark coat pocket tightens as the hidden right hand clenches once; a slow push in with small amplitude from chest height toward the pocket.\n[Shot 2] At 00:03.000, the camera cuts to <Picture 2>: his face half in shadow, lips barely moving, and the man in the dark coat with a low, restrained voice (S1) murmurs almost to himself: <d>[Chinese] 这条河，今晚怕是不太平。</d> static shot.\n[Shot 3] At 00:06.000, the shot cuts to the hushed cabin of <Picture 3>: a muffled steam whistle sounds once deep in the fog off screen and no one answers it; the camera holds a static shot on the stillness.\n\noverall_soundscape: Coat fabric creaks faintly under the clenching hand, water passes below in a low wash, and a distant muffled steam whistle rolls once through the fog.\n\nnon_diegetic_music: A single sustained low cello tone at a very slow tempo, fading before the end."
+        },
+        {
+          "id": "E01-10",
+          "sceneIndex": 2,
+          "cuts": [
+            {
+              "beats": [
+                21,
+                21
+              ],
+              "seconds": 5,
+              "size": "extreme-close",
+              "camera": "Push In",
+              "characters": [
+                "C01"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "extreme close-up of a green-tarnished brass clasp on an old leather suitcase in dim cabin light, a young woman's arms wrapped around the case edge, fog creeping across the frame, cinematic film still, cold gray-green palette, 16:9"
+            },
+            {
+              "beats": [
+                22,
+                22
+              ],
+              "seconds": 3,
+              "size": "extreme-close",
+              "camera": "Static Shot",
+              "characters": [
+                "C01"
+              ],
+              "props": [
+                "P01"
+              ],
+              "frame": "extreme close-up of the brass clasp glinting once, in the far blurred background a pier lantern shrunk to a tiny bean of yellow light, cinematic film still, cold gray-green palette, 16:9"
+            }
+          ],
+          "h3Prompt": "How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 2) aligns with the 5.00-second mark of the target video.\n\nintegrated_multimodal_description:\n[Shot 1] Cinematic, live-action, cold gray-green palette. The extreme close framing of <Picture 1> holds on the green-tarnished brass clasp, the young woman's arms wrapped around the case edge; a slow push in with small amplitude as fog creeps across the frame, and the young woman with a cold, steady voice (S1) says in an off-screen voiceover: <d>[Chinese] 谁都别碰它。到了县城，它就是我全部的话。</d> while her lips remain completely closed.\n[Shot 2] At 00:05.000, the camera cuts to <Picture 2>: the clasp glints once, and in the blurred distance the pier lantern shrinks to a bean of yellow light and dies; the camera holds a static shot, leaving the dull glint as the last bright point in the frame.\n\noverall_soundscape: Water slides under the hull beneath the fading whistle's echo, leather creaks under tightening arms, and the cabin holds its hush as the distant light goes out.\n\nnon_diegetic_music: Sparse low strings and a single soft piano note at a slow tempo, thinning to silence as the light dies.",
+          "note": "结尾段：VO 压大特写收在灯灭，悬念交给下一集"
+        }
+      ]
+    }
+  ]
+}

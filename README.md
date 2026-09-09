@@ -78,6 +78,8 @@ node scripts/storyboard-view.mjs examples/offline/storyboard.json --out runs/sto
 
 打开生成的 HTML 即可使用。接入真实项目与功能边界见[故事板使用说明](./references/storyboard-view.md)。
 
+进入人工审批节点时，agent 应主动打开当前报告、说明本轮范围与检查重点，并在对话中收取结论。用户可直接回复“通过 E01-01 分镜”或按镜号提出修改；不需要自行寻找 HTML 或运行命令。各阶段何时看、看什么、确认后如何继续见[审阅交接](./references/review-handoff.md)。页面中的验收框用于导出参考图，不替代项目审批或费用授权。
+
 ### 1. 制片级状态管理
 
 - 制品登记、依赖哈希、过期传播与重新审批。
@@ -119,11 +121,14 @@ node scripts/storyboard-view.mjs examples/offline/storyboard.json --out runs/sto
 
 ### 1. 安装
 
-将整个目录复制到 Codex skills 目录：
+仓库包含生产总控和七个配套 skill。推荐从仓库根目录安装到一个新的 skills 目录，先预览再写入：
 
-```text
-~/.codex/skills/short-drama-production/
+```bash
+node scripts/install-bundle.mjs --dest <项目目录>/.agents/skills
+node scripts/install-bundle.mjs --dest <项目目录>/.agents/skills --apply
 ```
+
+八个 skill 安装为同级目录，保留跨 skill 引用。目标中已有同名目录时整次安装拒绝覆盖；更新前先备份旧版本，或安装到新的项目目录。单独使用总控时，也可只复制本仓库的 SKILL.md、agents、assets、references、scripts 和 LICENSE。
 
 运行环境：
 
@@ -213,6 +218,8 @@ short-drama-production/
 node scripts/selftest.mjs
 node scripts/reality-gate-test.mjs
 node scripts/storyboard-view-test.mjs
+node scripts/post-workflow-test.mjs
+node scripts/bundle-test.mjs
 python scripts/compshare-offline-test.py
 python scripts/compshare-h3.py --help
 ```
@@ -221,7 +228,7 @@ python scripts/compshare-h3.py --help
 
 ## 推荐搭配
 
-专业创作阶段可按需安装：
+以下配套版本已包含在 skills/，安装器会与总控一起安装：
 
 - `novel-outline`：改编大纲。
 - `novel-characters`：角色设定与音色方向。
@@ -235,7 +242,7 @@ python scripts/compshare-h3.py --help
 
 ## 当前边界
 
-当前发布版交付本地故事板审阅页面与基于已有单格图的多格 PNG 导出，不自动绘制缺失镜头或提交视频。返工笔记可导出，但暂不支持导入或回写项目。配套专业 skills 仍需单独获取，尚无经过验证的一键安装清单。
+当前发布版交付本地故事板审阅页面与基于已有单格图的多格 PNG 导出，不自动绘制缺失镜头或提交视频。返工笔记支持导出与合并导入；编辑会话可保存和恢复笔记、替换图片与布局，暂不回写项目。配套 skills 已随仓库分发，安装器和安装后的七套回归测试在 Windows/Linux CI 中验证。
 
 升级后，CompShare 旧导出包需重新导出：新包包含 `integrityVersion` 和审计快照，防止继续使用已变化的审计。所有检查与示例均可离线运行；GitHub Actions 在 Windows/Linux 上运行离线测试，不配置生成密钥。
 
