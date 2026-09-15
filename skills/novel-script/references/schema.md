@@ -1,10 +1,13 @@
 # script.json 结构
 
-一份剧本文件覆盖一个集数区间（通常一批 ≤ 3 集），顶层：
+一份剧本文件覆盖本轮范围，独立短片也可用一个 episode 表示。默认 reviewPolicy 为 advisory；strict 才把创作建议当作硬门。旧项目若需要维持原拦截行为，应依据已有项目约定显式迁移到 strict。技术结构与引用校验不受此开关影响。
+
+下文 hook/cliff、35 字和公式时长等为旧模板的建议值，只有 strict 模式强制。独立片 cliff 可以空字符串；hookBeat 可以不填并保留提示。正文的结尾说明不能伪装为下一集悬念。顶层：
 
 ```json
 {
   "source": "渡口",
+  "reviewPolicy": "advisory",
   "params": { "charsPerSecond": 4.5, "actionSeconds": 2.5, "tolerance": 0.15, "maxLineChars": 35 },
   "episodes": [ ... ]
 }
@@ -18,8 +21,8 @@
 | --- | --- | --- |
 | `ep` | int | 集号，正整数，同一文件内不许重复 |
 | `targetSeconds` | number | 目标秒数。seed 会从大纲的 `minutesPerEpisode × 60` 算好 |
-| `hook` | string | 开场钩子的说明——这一集头几拍靠什么把人摁住。**必填** |
-| `cliff` | string | 结尾悬念的说明——最后一拍留什么让人点下一集。**必填** |
+| `hook` | string | 开场钩子的说明——这一集头几拍靠什么把人摁住。**strict 模式要求** |
+| `cliff` | string | 结尾悬念的说明——最后一拍留什么让人点下一集。**strict 模式要求** |
 | `beatsClaimed` | string[] | 认领的大纲爽点 `type`（如 `"身份揭破"`）。没有就空数组，**字段本身必须在** |
 | `hookBeat` | [int, int] | **钩子具象的认领位置** `[场, 拍]`：钩子说皮箱，哪一拍真给了皮箱。必须落在全集前 `hookWindow`（默认 3）拍内——冷开场规则，门查位置 |
 | `scenes` | scene[] | 场次，按剧情顺序 |
@@ -52,7 +55,7 @@
 
 | 字段 | 说明 |
 | --- | --- |
-| `action` | 叙述体画面描述，一拍一件事。**不许出现引号台词**（「」『』“”都不行）——台词混进动作就没法计秒、没法喂 TTS |
+| `action` | 叙述体画面描述，一拍一件事。**应将真正的对白拆到 line；画面文字与引文另说明，advisory 只提示**（「」『』“”都不行）——台词混进动作就没法计秒、没法喂 TTS |
 | `speaker` | 本场 `characters` 里的角色 id，或 `"VO"`（画外音/心声——谁的心声写进 delivery） |
 | `line` | 台词本体，口语，单句 ≤ 35 字（非空白字符计） |
 | `delivery` | 表演提示：语气、动作伴随、潜台词。可省略，建议都写 |
@@ -63,7 +66,7 @@
 
 - 台词秒数 = 非空白字符数 ÷ `charsPerSecond`（标点算时间——停顿也是时间）
 - 动作秒数 = 动作节拍数 × `actionSeconds`
-- 每集预估 = 全部场次之和，必须落在 `targetSeconds × (1 ± tolerance)` 内
+- 每集预估 = 全部场次之和，与 `targetSeconds × (1 ± tolerance)` 比较并提示；strict 模式才拦截。公式不能表达声画重叠或区分停顿长短，最终以围读和剪辑复核
 
 三分钟（180 秒）一集的参考体量：约 45–55 个节拍，其中台词 30 句上下。两分钟（120 秒）约 35 拍、台词 20 句上下。
 

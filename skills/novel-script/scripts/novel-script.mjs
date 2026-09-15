@@ -124,7 +124,11 @@ const QUOTE_RE = /「|」|『|』|“|”/;
 
 export function gateReport(doc, ctx = {}) {
   const gates = [];
-  const add = (id, label, ok, detail = '') => gates.push({ id, label, ok, detail });
+  const creative = new Set(['duration', 'line-length', 'hook-cliff', 'hook-open', 'has-action', 'action-prose', 'beats-claimed']);
+  const add = (id, label, ok, detail = '') => {
+    const severity = creative.has(id) && doc?.reviewPolicy !== 'strict' ? 'warning' : 'error';
+    gates.push({ id, label, ok, detail, severity });
+  };
   const eps = Array.isArray(doc?.episodes) ? doc.episodes : [];
   const params = paramsOf(doc);
   const stats = computeStats(doc);
@@ -249,6 +253,13 @@ export function validateScript(doc, ctx = {}) {
   const problems = [];
   const p = (msg) => problems.push(msg);
   if (!doc || typeof doc !== 'object') return ['script.json 不是对象'];
+  if (doc.reviewPolicy !== undefined && !['advisory', 'strict'].includes(doc.reviewPolicy)) p('reviewPolicy 必须为 advisory 或 strict');
+  for (const key of ['charsPerSecond', 'actionSeconds', 'maxLineChars', 'hookWindow']) {
+    const value = paramsOf(doc)[key];
+    if (!Number.isFinite(value) || value <= 0) p(`params.${key} 必须是有限正数`);
+  }
+  const tolerance = paramsOf(doc).tolerance;
+  if (!Number.isFinite(tolerance) || tolerance < 0 || tolerance >= 1) p('params.tolerance 必须在 [0, 1) 内');
 
   if (!thText(doc.source)) p('缺少 source（剧名/书名）');
   const eps = doc.episodes;
@@ -263,7 +274,7 @@ export function validateScript(doc, ctx = {}) {
     if (!Number.isInteger(ep?.ep) || ep.ep < 1) p(`${label}的 ep 必须是正整数`);
     if (seen.has(ep?.ep)) p(`集号 ${ep.ep} 重复`);
     seen.add(ep?.ep);
-    if (!(ep?.targetSeconds > 0)) p(`${label}缺 targetSeconds（目标秒数，来自大纲的单集时长）`);
+    if (!Number.isFinite(ep?.targetSeconds) || !(ep.targetSeconds > 0)) p(`${label}缺有效 targetSeconds（目标秒数）`);
     if (!Array.isArray(ep?.beatsClaimed)) p(`${label}缺 beatsClaimed（认领的爽点，可为空数组）`);
     if (!Array.isArray(ep?.scenes) || ep.scenes.length === 0) {
       p(`${label}没有场次`);
@@ -291,7 +302,7 @@ export function validateScript(doc, ctx = {}) {
   }
 
   for (const g of gateReport(doc, ctx)) {
-    if (!g.ok) p(`质量门未过：${g.label}${g.detail ? `（${g.detail}）` : ''}`);
+    if (!g.ok && g.severity === 'error') p(`质量门未过：${g.label}${g.detail ? `（${g.detail}）` : ''}`);
   }
   return problems;
 }
@@ -319,7 +330,7 @@ export function seedFromOutline(outline, epRange = null) {
       // 从大纲搬来的参考，写完删掉也行
       seedNote: `大纲梗概：${e.synopsis ?? ''}　候选场景：${(e.sceneIds ?? []).join('、')}　人物：${(e.characterIds ?? []).join('、')}`,
     }));
-  return { source: outline?.source ?? '', episodes };
+  return { source: outline?.source ?? '', reviewPolicy: 'advisory', episodes };
 }
 
 /* ------------------------------------------------------------------ */
@@ -534,11 +545,14 @@ export function renderMarkdown(doc, ctx = {}) {
   const first = eps[0]?.ep;
   const last = eps[eps.length - 1]?.ep;
   const out = [`# ${t.docTitle(doc.source, first, last)}`, ''];
+  for (const g of gateReport(doc, ctx).filter(g => !g.ok)) {
+    out.push(`> ${g.severity === 'warning' ? '⚠' : '✗'} ${g.severity === 'warning' ? (t.langCode === 'en' ? 'Advisory: ' : '创作建议：') : ''}${gateText(g, t.langCode).label} — ${g.detail}`, '');
+  }
 
   for (const [i, ep] of eps.entries()) {
     const st = stats.episodes[i];
     out.push(`## ${t.epHead(ep.ep)}`, '');
-    out.push(`> ${t.estLabel(st.est, ep.targetSeconds)} · ${t.hookLabel}${t.colon}${ep.hook}${Array.isArray(ep.hookBeat) ? t.paren(t.hookAt(ep.hookBeat[0], ep.hookBeat[1])) : ''} · ${t.cliffLabel}${t.colon}${ep.cliff}`);
+    out.push(`> ${t.estLabel(st.est, ep.targetSeconds)} · ${t.hookLabel}${t.colon}${ep.hook ?? ''}${Array.isArray(ep.hookBeat) ? t.paren(t.hookAt(ep.hookBeat[0], ep.hookBeat[1])) : ''} · ${t.cliffLabel}${t.colon}${ep.cliff ?? ''}`);
     if (ep.beatsClaimed.length) out.push(`> ${t.beatsLabel}${t.colon}${ep.beatsClaimed.join(t.sep)}`);
     out.push('');
     ep.scenes.forEach((sc, idx) => {
@@ -581,7 +595,8 @@ export function renderHtml(doc, ctx = {}) {
   const n = namer(ctx, t);
   const stats = computeStats(doc);
   const gates = gateReport(doc, ctx);
-  const failed = gates.filter((g) => !g.ok);
+  const failed = gates.filter((g) => !g.ok && g.severity === 'error');
+  const warnings = gates.filter((g) => !g.ok && g.severity === 'warning');
   const eps = doc.episodes;
   const first = eps[0]?.ep;
   const last = eps[eps.length - 1]?.ep;
@@ -683,7 +698,7 @@ export function renderHtml(doc, ctx = {}) {
   const gateList = `<ul class="gate">
   ${gates
     .map(
-      (g) => `<li class="${g.ok ? 'ok' : 'bad'}"><span class="m">${g.ok ? '✓' : '✗'}</span><span>${esc(gateText(g, t.langCode).label)}${
+      (g) => `<li class="${g.ok ? 'ok' : 'bad'}"><span class="m">${g.ok ? '✓' : g.severity === 'warning' ? '⚠' : '✗'}</span><span>${g.severity === 'warning' ? (t.langCode === 'en' ? '[Advisory] ' : '[创作建议] ') : ''}${esc(gateText(g, t.langCode).label)}${
         (!g.ok && g.detail) || (g.ok && g.detail.includes('跳过')) ? `<small>${esc(gateText(g, t.langCode).detail)}</small>` : ''
       }</span></li>`,
     )
@@ -859,7 +874,7 @@ td:first-child{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-s
   <h1>${esc(doc.source)}</h1>
   <span class="sub">${esc(t.kicker)} · ${esc(t.epRange(first, last))}</span>
   <span class="right">
-    <span class="gatepill ${failed.length ? 'fail' : 'pass'}">${failed.length ? '✗' : '✓'} ${esc(t.gatePill(gates.length - failed.length, gates.length))}</span>
+    <span class="gatepill ${failed.length || warnings.length ? 'fail' : 'pass'}">${failed.length ? '✗' : warnings.length ? '⚠' : '✓'} ${esc(t.gatePill(gates.filter(g => g.ok).length, gates.length))}</span>
     <button class="expo" data-name="${esc(slug(doc.source))}-script.json">${esc(t.exportJson)}</button>
   </span>
 </header>
@@ -907,7 +922,7 @@ ${castBlocks}
 <section class="top-sec" id="sec-gates">
   <div class="sec-h"><span class="no">05</span><h2>${esc(t.secGates)}</h2></div>
   ${gateList}
-  <p class="gsum">${failed.length ? `<b>${esc(t.gatesFail(failed.length))}</b>` : esc(t.gatesPass)}</p>
+  <p class="gsum">${failed.length ? `<b>${esc(t.gatesFail(failed.length))}</b>` : esc(t.gatesPass)}${warnings.length ? ` · ⚠ ${warnings.length} ${t.langCode === 'en' ? 'advisories; not approval of the story or measured runtime' : '项创作建议；不代表剧情获批或实测时长通过'}` : ''}</p>
 </section>
 
 <p class="foot">${esc(t.colophon)}</p>
@@ -1028,21 +1043,25 @@ function main(argv) {
 
     if (cmd === 'checkup') {
       const gates = gateReport(doc, ctx);
-      for (const g of gates) console.log(`${g.ok ? '✓' : '✗'} ${g.label}${!g.ok && g.detail ? ` — ${g.detail}` : ''}`);
-      const failedN = gates.filter((g) => !g.ok).length;
-      console.log(failedN ? `\n✗ ${failedN} 项未过` : '\n✓ 全部通过');
+      for (const g of gates) console.log(`${g.ok ? '✓' : g.severity === 'warning' ? '⚠ 建议' : '✗'} ${g.label}${!g.ok && g.detail ? ` — ${g.detail}` : ''}`);
+      const problems = validateScript(doc, ctx);
+      const failedN = problems.length;
+      for (const problem of problems) console.error(problem);
+      const warningN = gates.filter(g => !g.ok && g.severity === 'warning').length;
+      console.log(failedN ? `\n✗ ${failedN} 项未过` : `\n✓ 硬约束通过；${warningN} 项创作建议，内容仍需审阅`);
       if (failedN) process.exit(1);
       return;
     }
 
     const problems = validateScript(doc, ctx);
+    for (const g of gateReport(doc, ctx).filter(g => !g.ok && g.severity === 'warning')) console.error(`⚠ 创作建议：${g.label} — ${g.detail}；保留原稿，按用户目标决定，不自动改戏。`);
     if (problems.length) {
       console.error(`✗ ${problems.length} 处违规：\n`);
       for (const x of problems) console.error('  ' + x);
       process.exit(1);
     }
     const st = computeStats(doc);
-    console.log(`✓ ${st.totals.episodes} 集 / ${st.totals.scenes} 场 / ${st.totals.lines} 句台词全部通过校验（预估 ${st.totals.estSeconds}s / 目标 ${st.totals.targetSeconds}s）`);
+    console.log(`✓ ${st.totals.episodes} 集 / ${st.totals.scenes} 场 / ${st.totals.lines} 句台词硬约束通过（公式预估 ${st.totals.estSeconds}s / 目标 ${st.totals.targetSeconds}s）；创作建议见上文，不代表内容获批或实测时长。`);
     return;
   }
 

@@ -22,6 +22,7 @@ jobs:
       - run: node scripts/review-handoff-test.mjs
       - run: node scripts/post-workflow-test.mjs
       - run: node scripts/bundle-test.mjs
+      - run: node skills/novel-script/scripts/creative-policy-test.mjs
       - run: node skills/short-drama-director/scripts/format-handoff-test.mjs
       - run: python -m pip install -r requirements-dev.txt
       - run: python scripts/validate-skills.py
