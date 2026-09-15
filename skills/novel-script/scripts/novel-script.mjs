@@ -11,20 +11,17 @@ import { fileURLToPath } from 'node:url';
 /* 时长引擎                                                             */
 /* ------------------------------------------------------------------ */
 /*
- * 剧本层不分镜头（分镜是下一个 skill 的活），但时长预算必须在这层守住：
- * AI 短剧一集就是三分钟上下，台词写超了后面全盘返工。
- *
- * 估算模型：台词秒数 = 非空白字符数 ÷ 语速；动作节拍按固定秒数计。
- * 是估算不是秒表，所以容差给到 ±15%（可配）——但估算也比不算强得多，
- * 一集写到五分钟的剧本在这里就会被拦下，不会流到生成环节才发现。
+ * Legacy formula retained only for explicitly requested comparisons.
+ * Default statistics contain no estimated durations. Speech performance and
+ * simultaneous action require an actual read-through or timed edit.
  */
 
 export const DEFAULT_PARAMS = {
-  charsPerSecond: 4.5, // 中文口语偏快档
+  charsPerSecond: 4.5, // Legacy preset, not a measured speaking rate
   actionSeconds: 2.5,  // 每个动作节拍的估时
   tolerance: 0.15,     // 时长容差 ±15%
-  maxLineChars: 35,    // 单句台词上限——一口气说不完的台词也生成不了
-  hookWindow: 3,       // 开场钩子必须在全集前几拍内兑现——短剧开场 3 秒定生死
+  maxLineChars: 35,    // Legacy preset, not a universal dialogue limit
+  hookWindow: 3,       // Legacy preset, not a universal opening rule
 };
 
 export function paramsOf(doc) {
@@ -37,7 +34,8 @@ export const lineChars = (line) => String(line ?? '').replace(/\s+/g, '').length
 const r1 = (n) => Math.round(n * 10) / 10;
 
 /** 一场戏的估秒。flow 里台词按语速折算，动作节拍按固定秒数。 */
-export function sceneSeconds(scene, params = DEFAULT_PARAMS) {
+export function sceneSeconds(scene, params = null) {
+  if (!params) return { dialogue: null, action: null, total: null };
   let dlg = 0;
   let act = 0;
   for (const b of scene?.flow ?? []) {
@@ -53,6 +51,7 @@ export function sceneSeconds(scene, params = DEFAULT_PARAMS) {
 
 export function computeStats(doc) {
   const params = paramsOf(doc);
+  const timingEstimated = doc?.timingMode === 'legacy-estimate';
   const episodes = [];
   const sceneTable = [];
   const byCharacter = new Map(); // C01 → { lines: [...], chars }
@@ -62,7 +61,7 @@ export function computeStats(doc) {
     let act = 0;
     let lines = 0;
     (ep?.scenes ?? []).forEach((sc, idx) => {
-      const sec = sceneSeconds(sc, params);
+      const sec = sceneSeconds(sc, timingEstimated ? params : null);
       dlg += sec.dialogue;
       act += sec.action;
       let lineCount = 0;
@@ -106,7 +105,12 @@ export function computeStats(doc) {
     .map(([id, v]) => ({ id, count: v.lines.length, chars: v.chars, lines: v.lines }))
     .sort((a, b) => b.count - a.count);
 
-  return { params, episodes, sceneTable, castLines, totals };
+  if (!timingEstimated) {
+    for (const ep of episodes) ep.est = ep.dialogueSeconds = ep.actionSeconds = null;
+    for (const sc of sceneTable) sc.estSeconds = null;
+    totals.estSeconds = totals.dialogueSeconds = null;
+  }
+  return { params, timingEstimated, timingStatus: timingEstimated ? 'legacy-estimate' : 'unmeasured', episodes, sceneTable, castLines, totals };
 }
 
 /* ------------------------------------------------------------------ */
@@ -126,6 +130,8 @@ export function gateReport(doc, ctx = {}) {
   const gates = [];
   const creative = new Set(['duration', 'line-length', 'hook-cliff', 'hook-open', 'has-action', 'action-prose', 'beats-claimed']);
   const add = (id, label, ok, detail = '') => {
+    if (creative.has(id) && doc?.reviewPolicy !== 'strict') return;
+    if (id === 'duration' && !stats.timingEstimated) return;
     const severity = creative.has(id) && doc?.reviewPolicy !== 'strict' ? 'warning' : 'error';
     gates.push({ id, label, ok, detail, severity });
   };
@@ -253,6 +259,7 @@ export function validateScript(doc, ctx = {}) {
   const problems = [];
   const p = (msg) => problems.push(msg);
   if (!doc || typeof doc !== 'object') return ['script.json 不是对象'];
+  if (doc.timingMode !== undefined && !['off', 'legacy-estimate'].includes(doc.timingMode)) p('timingMode 必须为 off 或 legacy-estimate');
   if (doc.reviewPolicy !== undefined && !['advisory', 'strict'].includes(doc.reviewPolicy)) p('reviewPolicy 必须为 advisory 或 strict');
   for (const key of ['charsPerSecond', 'actionSeconds', 'maxLineChars', 'hookWindow']) {
     const value = paramsOf(doc)[key];
@@ -552,7 +559,7 @@ export function renderMarkdown(doc, ctx = {}) {
   for (const [i, ep] of eps.entries()) {
     const st = stats.episodes[i];
     out.push(`## ${t.epHead(ep.ep)}`, '');
-    out.push(`> ${t.estLabel(st.est, ep.targetSeconds)} · ${t.hookLabel}${t.colon}${ep.hook ?? ''}${Array.isArray(ep.hookBeat) ? t.paren(t.hookAt(ep.hookBeat[0], ep.hookBeat[1])) : ''} · ${t.cliffLabel}${t.colon}${ep.cliff ?? ''}`);
+    out.push(`> ${(stats.timingEstimated ? t.estLabel(st.est, ep.targetSeconds) : (t.langCode === 'en' ? 'Runtime unmeasured' : '时长待试读/剪辑核实'))} · ${t.hookLabel}${t.colon}${ep.hook ?? ''}${Array.isArray(ep.hookBeat) ? t.paren(t.hookAt(ep.hookBeat[0], ep.hookBeat[1])) : ''} · ${t.cliffLabel}${t.colon}${ep.cliff ?? ''}`);
     if (ep.beatsClaimed.length) out.push(`> ${t.beatsLabel}${t.colon}${ep.beatsClaimed.join(t.sep)}`);
     out.push('');
     ep.scenes.forEach((sc, idx) => {
@@ -567,11 +574,11 @@ export function renderMarkdown(doc, ctx = {}) {
 
   out.push('---', '', `## ${t.secSceneTable}`, '', mdHead(t.sceneCols));
   for (const row of stats.sceneTable) {
-    out.push(mdRow([row.ep, row.index, n.scene(row.sceneId), row.lighting, row.characters.map(n.char).join(t.sep), row.lineCount, row.estSeconds]));
+    out.push(mdRow([row.ep, row.index, n.scene(row.sceneId), row.lighting, row.characters.map(n.char).join(t.sep), row.lineCount, row.estSeconds ?? '—']));
   }
   out.push('', `## ${t.secCastLines}`, '', mdHead(t.castCols));
   for (const c of stats.castLines) {
-    out.push(mdRow([n.char(c.id), c.count, c.chars, r1(c.chars / stats.params.charsPerSecond)]));
+    out.push(mdRow([n.char(c.id), c.count, c.chars, (stats.timingEstimated ? r1(c.chars / stats.params.charsPerSecond) : '—')]));
   }
   out.push('');
   return out.join('\n');
@@ -602,9 +609,9 @@ export function renderHtml(doc, ctx = {}) {
   const last = eps[eps.length - 1]?.ep;
   const tolPct = Math.round(stats.params.tolerance * 100);
 
-  const fmtMin = (sec) => t.fmtMin(Math.floor(sec / 60), Math.round(sec % 60));
-  const dlgRatio = stats.totals.estSeconds ? Math.round((stats.totals.dialogueSeconds / stats.totals.estSeconds) * 100) : 0;
-  const avgScene = stats.totals.scenes ? r1(stats.totals.estSeconds / stats.totals.scenes) : 0;
+  const fmtMin = (sec) => sec === null ? '—' : t.fmtMin(Math.floor(sec / 60), Math.round(sec % 60));
+  const dlgRatio = stats.totals.estSeconds ? Math.round((stats.totals.dialogueSeconds / stats.totals.estSeconds) * 100) : '—';
+  const avgScene = stats.timingEstimated && stats.totals.scenes ? r1(stats.totals.estSeconds / stats.totals.scenes) : '—';
 
   // ---- 时长仪表：每集一行，目标区间画成绿带，台词/动作堆叠 ----
   const scaleMax = Math.max(...stats.episodes.map((e) => Math.max(e.est, (e.target ?? 0) * (1 + stats.params.tolerance)))) * 1.08;
@@ -612,6 +619,7 @@ export function renderHtml(doc, ctx = {}) {
     .map((e) => {
       const lo = e.target * (1 - stats.params.tolerance);
       const hi = e.target * (1 + stats.params.tolerance);
+      if (!stats.timingEstimated) return `<div class="trow">E${e.ep}: ${t.langCode === 'en' ? 'Runtime unmeasured' : '时长待试读/剪辑核实'}</div>`;
       const inBand = e.est >= lo && e.est <= hi;
       const pct = (v) => `${r1((v / scaleMax) * 100)}%`;
       const status = inBand ? '' : ` <b class="over">${esc(e.est > hi ? t.overBy(r1(e.est - hi)) : t.underBy(r1(lo - e.est)))}</b>`;
@@ -657,7 +665,7 @@ export function renderHtml(doc, ctx = {}) {
       return `<article class="ep" id="ep-${ep.ep}">
   <header class="ep-h">
     <span class="ep-n">E${String(ep.ep).padStart(2, '0')}</span>
-    <span class="ep-est">${esc(t.estLabel(st.est, ep.targetSeconds))}</span>
+    <span class="ep-est">${esc((stats.timingEstimated ? t.estLabel(st.est, ep.targetSeconds) : (t.langCode === 'en' ? 'Runtime unmeasured' : '时长待试读/剪辑核实')))}</span>
     ${ep.beatsClaimed.map((b) => `<i class="bt">${esc(b)}</i>`).join('')}
   </header>
   <div class="hk"><b>${esc(t.hookLabel)}</b><span>${esc(ep.hook)}${Array.isArray(ep.hookBeat) ? ` <i class="hookat">${esc(t.hookAt(ep.hookBeat[0], ep.hookBeat[1]))}</i>` : ''}</span></div>
@@ -677,7 +685,7 @@ export function renderHtml(doc, ctx = {}) {
 
   const sceneRows = stats.sceneTable.map((row) => [
     String(row.ep), String(row.index), esc(`${row.sceneId} ${n.scene(row.sceneId)}`), esc(row.lighting),
-    esc(row.characters.map(n.char).join(t.sep)), String(row.lineCount), String(row.estSeconds),
+    esc(row.characters.map(n.char).join(t.sep)), String(row.lineCount), String(row.estSeconds ?? '—'),
   ]);
 
   const castBlocks = stats.castLines
@@ -686,7 +694,7 @@ export function renderHtml(doc, ctx = {}) {
       return `<section class="cast-blk">
   <header class="cast-h">
     <b>${esc(n.char(c.id))}</b>
-    <span class="cast-meta">${esc(t.castMeta(c.count, c.chars, r1(c.chars / stats.params.charsPerSecond)))}</span>
+    <span class="cast-meta">${esc(t.castMeta(c.count, c.chars, (stats.timingEstimated ? r1(c.chars / stats.params.charsPerSecond) : '—')))}</span>
     ${n.voice(c.id) ? `<button class="copy" data-copy="${esc(n.voice(c.id))}">${esc(t.voiceBtn)}</button>` : ''}
     <button class="copy" data-copy="${esc(allText)}">${esc(t.copyAllLines)}</button>
   </header>
@@ -882,14 +890,14 @@ td:first-child{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-s
 <div class="kpis">
   <div class="kpi accent"><div class="l">${esc(t.kpi.eps)}</div><div class="v">${stats.totals.episodes}</div><div class="d">${esc(t.kpi.epsSub(stats.totals.scenes))}</div></div>
   <div class="kpi"><div class="l">${esc(t.kpi.time)}</div><div class="v">${esc(fmtMin(stats.totals.estSeconds))}</div><div class="d">${esc(t.kpi.timeSub(fmtMin(stats.totals.targetSeconds)))}</div></div>
-  <div class="kpi"><div class="l">${esc(t.kpi.lines)}</div><div class="v">${stats.totals.lines} <small>${esc(t.unitLines)}</small></div><div class="d">${esc(t.kpi.linesSub(stats.totals.dialogueSeconds))}</div></div>
+  <div class="kpi"><div class="l">${esc(t.kpi.lines)}</div><div class="v">${stats.totals.lines} <small>${esc(t.unitLines)}</small></div><div class="d">${esc((stats.timingEstimated ? t.kpi.linesSub(stats.totals.dialogueSeconds) : (t.langCode === 'en' ? 'Dialogue not timed' : '对白尚未计时')))}</div></div>
   <div class="kpi"><div class="l">${esc(t.kpi.dlgRatio)}</div><div class="v">${dlgRatio}<small>%</small></div><div class="d">${esc(t.kpi.dlgRatioSub)}</div></div>
   <div class="kpi"><div class="l">${esc(t.kpi.avgScene)}</div><div class="v">${avgScene} <small>${esc(t.unitSec)}</small></div><div class="d">${esc(t.kpi.avgSceneSub)}</div></div>
 </div>
 ${failed.length ? `<div class="galert"><b>✗ ${esc(t.gatesFail(failed.length))}</b>${failed.map((g) => `<span>${esc(gateText(g, t.langCode).label)}${g.detail ? ` — ${esc(gateText(g, t.langCode).detail)}` : ''}</span>`).join('')}</div>` : ''}
 
 <section class="top-sec" id="sec-timing">
-  <div class="sec-h"><span class="no">01</span><h2>${esc(t.secTiming)}</h2><span class="note">${esc(t.timingNote(tolPct))}</span></div>
+  <div class="sec-h"><span class="no">01</span><h2>${esc(t.secTiming)}</h2><span class="note">${esc((stats.timingEstimated ? t.timingNote(tolPct) : (t.langCode === 'en' ? 'No default speed or per-action duration is applied' : '不套用默认语速或每动作固定秒数')))}</span></div>
   <div class="timing">
     <div class="legend">
       <i><span class="sw" style="background:var(--seal)"></span>${esc(t.legendDlg)}</i>
@@ -1061,7 +1069,7 @@ function main(argv) {
       process.exit(1);
     }
     const st = computeStats(doc);
-    console.log(`✓ ${st.totals.episodes} 集 / ${st.totals.scenes} 场 / ${st.totals.lines} 句台词硬约束通过（公式预估 ${st.totals.estSeconds}s / 目标 ${st.totals.targetSeconds}s）；创作建议见上文，不代表内容获批或实测时长。`);
+    console.log(`✓ ${st.totals.episodes} 集 / ${st.totals.scenes} 场 / ${st.totals.lines} 句台词硬约束通过（${st.timingEstimated ? `旧公式估计 ${st.totals.estSeconds}s / 目标 ${st.totals.targetSeconds}s` : '时长待试读/剪辑核实'}）；创作建议见上文，不代表内容获批或实测时长。`);
     return;
   }
 

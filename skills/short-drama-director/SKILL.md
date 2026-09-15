@@ -146,3 +146,6 @@ node scripts/director-kit.mjs render director-package.json > director-shotlist.m
 本项目的阶段职责、变更记录和交付顺序由 `short-drama-production` 的 `references/company-workflow.md` 统一维护；未安装总控时按本 skill 的输入和交付范围独立完成，不将总控变成硬依赖。
 
 每次内容交付运行 validate；只有修改工具代码或遇到疑似工具回归时运行 scripts/selftest.mjs，不要求每次创作重跑开发测试。
+
+
+涉及尚未授权的创作取舍时，给用户 2–3 个有具体差异的选项，说明收益、损失与推荐，允许保留原稿或自定义。模型先完成阅读、诊断和短样段，不把准备工作推给用户；已经明确授权的范围直接执行。未经用户选择，不把暂定片长预算升级成删词、删情绪段落的理由。

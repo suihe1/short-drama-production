@@ -176,7 +176,10 @@ const EP_TEXT_FIELDS = ['synopsis', 'hook', 'suspense'];
 export function gateReport(outline) {
   const th = thresholdsOf(outline);
   const gates = [];
-  const add = (id, label, ok, detail = '') => gates.push({ id, label, ok, detail });
+  const add = (id, label, ok, detail = '') => {
+    if (outline?.reviewPolicy !== 'strict' && id !== 'refs') return;
+    gates.push({ id, label, ok, detail });
+  };
 
   const chars = Array.isArray(outline?.characters) ? outline.characters : [];
   const scenes = Array.isArray(outline?.scenes) ? outline.scenes : [];
@@ -292,8 +295,8 @@ export function gateReport(outline) {
       refBad.push(`爽点 ${b.id} 落在不存在的第 ${b.episode} 集`);
     }
   }
-  for (const [id, n] of charUse) if (n === 0) refBad.push(`角色 ${id} 从未在任何一集出现`);
-  for (const [id, n] of sceneUse) if (n === 0) refBad.push(`场景 ${id} 从未被用到`);
+  for (const [id, n] of charUse) if (outline?.reviewPolicy === 'strict' && n === 0) refBad.push(`角色 ${id} 从未在任何一集出现`);
+  for (const [id, n] of sceneUse) if (outline?.reviewPolicy === 'strict' && n === 0) refBad.push(`场景 ${id} 从未被用到`);
   add('refs', '场景/角色引用完整，无失业角色、无空转场景', eps.length > 0 && refBad.length === 0, refBad.join('；'));
 
   // G11 梗概是叙述体
@@ -326,6 +329,8 @@ export function validateOutline(outline, stage = 'full') {
   const p = (msg) => problems.push(msg);
   if (!outline || typeof outline !== 'object') return ['outline 不是对象'];
   const th = thresholdsOf(outline);
+  const strict = outline.reviewPolicy === 'strict';
+  if (outline.reviewPolicy !== undefined && !['advisory', 'strict'].includes(outline.reviewPolicy)) p('reviewPolicy 必须为 advisory 或 strict');
 
   // --- params ---
   const params = outline.params;
@@ -349,8 +354,8 @@ export function validateOutline(outline, stage = 'full') {
     for (const key of ['keep', 'cut', 'merge', 'risks']) {
       if (!Array.isArray(ad[key])) p(`adaptation.${key} 必须是数组`);
     }
-    if (Array.isArray(ad.keep) && ad.keep.length === 0) p('adaptation.keep 至少要有一条——什么都不保还改编什么');
-    if (params?.adaptMode && params.adaptMode !== '忠实' && Array.isArray(ad.cut) && ad.cut.length === 0) {
+    if (strict && Array.isArray(ad.keep) && ad.keep.length === 0) p('adaptation.keep 至少要有一条——什么都不保还改编什么');
+    if (strict && params?.adaptMode && params.adaptMode !== '忠实' && Array.isArray(ad.cut) && ad.cut.length === 0) {
       p(`adaptMode=${params.adaptMode} 却一条线都没砍，说不过去`);
     }
     for (const [key, fields] of [['keep', ['what', 'why']], ['cut', ['what', 'why']], ['merge', ['what', 'why']], ['risks', ['what', 'plan']]]) {
@@ -372,9 +377,9 @@ export function validateOutline(outline, stage = 'full') {
     const tierCap = { lead: th.maxLeads, support: th.maxSupport, functional: th.maxFunctional };
     for (const tier of CHARACTER_TIERS) {
       const n = chars.filter((c) => c?.tier === tier).length;
-      if (n > tierCap[tier]) p(`${TIER_LABELS[tier]} ${n} 位，超过上限 ${tierCap[tier]}`);
+      if (strict && n > tierCap[tier]) p(`${TIER_LABELS[tier]} ${n} 位，超过上限 ${tierCap[tier]}`);
     }
-    if (!chars.some((c) => c?.tier === 'lead')) p('没有主角组（tier=lead）角色');
+    if (strict && !chars.some((c) => c?.tier === 'lead')) p('没有主角组（tier=lead）角色');
     const seen = new Set();
     for (const c of chars) {
       const label = c?.name ?? c?.id ?? '(无名)';
@@ -386,7 +391,7 @@ export function validateOutline(outline, stage = 'full') {
       }
       for (const f of ['name', 'role']) if (!thText(c?.[f])) p(`[${label}] 缺 ${f}`);
       // 功能性角色没有弧光是正常的——医生就是来缝针的
-      if (c?.tier !== 'functional' && !thText(c?.arc)) p(`[${label}] 缺 arc（主角组和重要配角必须有人物弧）`);
+      if (strict && c?.tier !== 'functional' && !thText(c?.arc)) p(`[${label}] 缺 arc（主角组和重要配角必须有人物弧）`);
       if (!Array.isArray(c?.from) || c.from.length === 0 || !c.from.every(thText)) {
         p(`[${label}] 缺 from（← 改动记录：原著对应谁、合并了谁）`);
       }
@@ -399,7 +404,7 @@ export function validateOutline(outline, stage = 'full') {
     p('scenes 为空');
   } else {
     const primaryN = scenes.filter((s) => s?.primary).length;
-    if (primaryN > th.maxPrimaryScenes) p(`主场景 ${primaryN} 个，超过上限 ${th.maxPrimaryScenes}`);
+    if (strict && primaryN > th.maxPrimaryScenes) p(`主场景 ${primaryN} 个，超过上限 ${th.maxPrimaryScenes}`);
     const seen = new Set();
     for (const s of scenes) {
       const label = s?.name ?? s?.id ?? '(无名)';
@@ -415,7 +420,7 @@ export function validateOutline(outline, stage = 'full') {
 
   // --- beats 爽点表 ---
   const beats = outline.beats;
-  if (!Array.isArray(beats) || beats.length === 0) {
+  if (!Array.isArray(beats) || (strict && beats.length === 0)) {
     p('beats 为空——爽点表是排片的骨架');
   } else {
     const seen = new Set();
@@ -448,6 +453,7 @@ export function validateOutline(outline, stage = 'full') {
       p(`分集写了 ${eps.length} 集，params.episodes 说好 ${params.episodes} 集`);
     }
     eps.forEach((e, i) => {
+      if (!thText(e?.synopsis)) p(`第 ${e?.ep} 集缺 synopsis`);
       if (e?.ep !== i + 1) p(`第 ${i + 1} 个条目的 ep 是 ${e?.ep}，编号必须从 1 连续`);
       if (!Array.isArray(e?.sceneIds) || e.sceneIds.length === 0) p(`第 ${e?.ep} 集缺 sceneIds`);
       if (!Array.isArray(e?.characterIds) || e.characterIds.length === 0) p(`第 ${e?.ep} 集缺 characterIds`);

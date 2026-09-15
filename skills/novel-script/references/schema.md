@@ -1,75 +1,46 @@
-# script.json 结构
+# script.json 数据合同
 
-一份剧本文件覆盖本轮范围，独立短片也可用一个 episode 表示。默认 reviewPolicy 为 advisory；strict 才把创作建议当作硬门。旧项目若需要维持原拦截行为，应依据已有项目约定显式迁移到 strict。技术结构与引用校验不受此开关影响。
+用于制作关联与报告，不是写戏模板。默认 reviewPolicy 为 advisory，创作公式与类型门不运行，也不以告警催促改写。timingMode 默认 off，时长统计为 null，报告显示未计时；null 不代表零秒。
 
-下文 hook/cliff、35 字和公式时长等为旧模板的建议值，只有 strict 模式强制。独立片 cliff 可以空字符串；hookBeat 可以不填并保留提示。正文的结尾说明不能伪装为下一集悬念。顶层：
+## 文档和集
 
 ```json
 {
-  "source": "渡口",
+  "source": "片名",
   "reviewPolicy": "advisory",
-  "params": { "charsPerSecond": 4.5, "actionSeconds": 2.5, "tolerance": 0.15, "maxLineChars": 35 },
-  "episodes": [ ... ]
+  "timingMode": "off",
+  "episodes": [{
+    "ep": 1,
+    "targetSeconds": 100,
+    "beatsClaimed": [],
+    "scenes": [{
+      "sceneId": "S01",
+      "characters": ["C01"],
+      "flow": [{"speaker": "C01", "line": "我记得。", "delivery": "没有抬头"}]
+    }]
+  }]
 }
 ```
 
-`params` 可省略，省略就用默认值。四个键都只在需要偏离默认时写。
+targetSeconds 是本轮约定的目标，不是实测结果；尚未确定目标时先以 Markdown 讨论，不为生成 JSON 猜一个数。ep 为唯一正整数。beatsClaimed 保留用于已给大纲的关联，无相关内容时为空数组。
 
-## episode
+hook、cliff、hookBeat 为可选的旧版叙事标注，默认不检查。独立片可省略，不为填字段制造悬念。结尾如何成立由创作判断和用户反馈决定。
 
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `ep` | int | 集号，正整数，同一文件内不许重复 |
-| `targetSeconds` | number | 目标秒数。seed 会从大纲的 `minutesPerEpisode × 60` 算好 |
-| `hook` | string | 开场钩子的说明——这一集头几拍靠什么把人摁住。**strict 模式要求** |
-| `cliff` | string | 结尾悬念的说明——最后一拍留什么让人点下一集。**strict 模式要求** |
-| `beatsClaimed` | string[] | 认领的大纲爽点 `type`（如 `"身份揭破"`）。没有就空数组，**字段本身必须在** |
-| `hookBeat` | [int, int] | **钩子具象的认领位置** `[场, 拍]`：钩子说皮箱，哪一拍真给了皮箱。必须落在全集前 `hookWindow`（默认 3）拍内——冷开场规则，门查位置 |
-| `scenes` | scene[] | 场次，按剧情顺序 |
+## 场次与条目
 
-`hook` / `cliff` 是**说明不是台词**——它们描述开场和结尾要达成的效果，具体的戏写在场次里。说明配合 `hookBeat` 认领：**说明给人读，认领给机器查**——钩子和第一场开头衔接不上，就是缺了认领这一环。
+- sceneId：S01 形式的稳定编号；提供 art.json 时需对应已登记场景。
+- characters：本场人物 ID 数组；空镜可为空。
+- lighting/props：可选；提供美术数据时核对状态及道具 ID。
+- flow：有序内容条目。每条使用 action 或 line 二选一；这是数据区分，不要求动作与对白机械交替，也不意味着逐条顺序计时。
+- action：可见行为、反应或画面内容。屏幕文字和引号不自动判为错误，真正供配音的对白应单独保存。
+- speaker/line：人物 ID 和原台词。保留语言、长短和发言完整性；没有通用 35 字上限。
+- delivery：可选的表演及伴随动作说明。
+- VO：现有工具的画外音标记，声音所属人物需在 delivery 中注明，避免丢失身份。
 
-## scene（场次）
+结构化转换保留原稿与段落定位；原稿中的镜头意图可另附导演交接，不静默删除。人物编号用于关联，不强制重写大纲。
 
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `sceneId` | string | `S01` 格式，对账 art.json 的场景 |
-| `lighting` | string | 该场用的光照状态名，必须是 art.json 里该场景登记过的状态。可省略 |
-| `characters` | string[] | 本场出场角色（`C01` 格式，对账 outline.json）。空镜给空数组 |
-| `props` | string[] | 本场用到的叙事道具（`P01` 格式，对账 art.json）。可省略 |
-| `flow` | beat[] | 节拍流，**动作与台词交替**，按发生顺序 |
+## 仅供明确要求的旧版比较
 
-## beat（节拍）——二选一
+reviewPolicy: strict 恢复旧版创作门，只有用户明确要求整套旧标准时使用。timingMode: legacy-estimate 单独开启旧估时，两者互不隐含开启。
 
-**动作节拍**：
-
-```json
-{ "action": "沈知微一把按住箱盖。动作快得不像闺秀，倒像护崽的兽。" }
-```
-
-**台词节拍**：
-
-```json
-{ "speaker": "C01", "line": "不劳烦。它跟我。", "delivery": "声音很轻，却没商量" }
-```
-
-| 字段 | 说明 |
-| --- | --- |
-| `action` | 叙述体画面描述，一拍一件事。**应将真正的对白拆到 line；画面文字与引文另说明，advisory 只提示**（「」『』“”都不行）——台词混进动作就没法计秒、没法喂 TTS |
-| `speaker` | 本场 `characters` 里的角色 id，或 `"VO"`（画外音/心声——谁的心声写进 delivery） |
-| `line` | 台词本体，口语，单句 ≤ 35 字（非空白字符计） |
-| `delivery` | 表演提示：语气、动作伴随、潜台词。可省略，建议都写 |
-
-一个节拍不能既有 `action` 又有 `line`；两者都没有也不行。
-
-## 时长折算（确定性）
-
-- 台词秒数 = 非空白字符数 ÷ `charsPerSecond`（标点算时间——停顿也是时间）
-- 动作秒数 = 动作节拍数 × `actionSeconds`
-- 每集预估 = 全部场次之和，与 `targetSeconds × (1 ± tolerance)` 比较并提示；strict 模式才拦截。公式不能表达声画重叠或区分停顿长短，最终以围读和剪辑复核
-
-三分钟（180 秒）一集的参考体量：约 45–55 个节拍，其中台词 30 句上下。两分钟（120 秒）约 35 拍、台词 20 句上下。
-
-## ID 纪律
-
-角色用 outline.json 的 `C` 编号（不是 cast.json 的名字），场景道具用 art.json 的 `S` / `P` 编号。报告渲染时给了 `--outline` / `--art` 会自动把编号显示成名字——**数据里存编号，界面上看名字**。
+旧公式使用非空白字符数/params.charsPerSecond，加动作条目数×params.actionSeconds；标点计入且无法表达重叠，结果仅供对照。默认预设保留在代码中以便旧项目兼容，不是自然语速或生成能力声明。不得自动开启、通过修改参数凑时长，或据此删改剧情。实测应附试读音轨或剪辑计时依据，不把填入目标数当作测量。

@@ -38,6 +38,7 @@ function eq(actual, expected, msg) {
   assert.strictEqual(actual, expected, `${msg} — 期望 ${expected}，实际 ${actual}`);
   passed++;
 }
+FIXTURE.reviewPolicy = 'strict'; // Legacy rule tests explicitly request the preset.
 const clone = () => JSON.parse(JSON.stringify(FIXTURE));
 const gate = (o, id) => gateReport(o).find((g) => g.id === id);
 
